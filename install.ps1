@@ -8,7 +8,7 @@ Write-Host "This is being installed at: $($env:systemdrive)\psf"
 
 if(-not (Test-Path "$($env:systemdrive)\psf")) {
   Write-Host "Creating PSF"
-  New-Item "$($env:systemdrive)\psf" -Type Directory
+  New-Item "$($env:systemdrive)\psf" -Type Directory | Out-Null
 } else {
   Write-Host "Upgrading PSF"
 }
