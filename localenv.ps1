@@ -61,6 +61,18 @@ function Update-PSF {
 
 }
 
+function Install-Tools {
+	Write-Host "Installing Chocolatey"
+	if(-not $env:path -match "Chocolatey") {
+	  iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+	}
+	
+	Write-Host "Installing Boxstarter"
+	if($env:path -match "Boxstarter" -and -not $env:path -match "Boxstarter" ) {
+	  CINST Boxstarter
+	}
+}
+
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
