@@ -79,11 +79,7 @@ function Show-SystemInfo {
   Write-Host $PSVersion -ForegroundColor $Color_Value_2
   Write-Host "Code Signing Cert:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
   Write-Host $Cert.FriendlyName -ForegroundColor $Color_Value_2
-  Write-Host "Local Apps Path:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
-  Write-Host $localapps -ForegroundColor $Color_Value_2
-  Write-Host "Editor Path:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
-  Write-Host $notepad -ForegroundColor $Color_Value_2
-  
+
   Write-Host "Snapins:".PadRight(24," ") -ForegroundColor $Color_Label -NoNewline
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
@@ -94,7 +90,7 @@ function Show-SystemInfo {
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
   
   Get-Module | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}
-  Get-Module -ListAvailable | Format-Wide -Column 3 | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_2} 
+  #Get-Module -ListAvailable | Format-Wide -Column 3 | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_2} 
   
   Write-Host "Functions:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
@@ -131,6 +127,12 @@ function Show-SystemInfo {
   } else {
     Write-Host "Running in user mode"
   }	
+}
+
+function Add-DirectoryToPath($Directory) {
+	if (-not ($ENV:PATH.Contains($Directory))) {
+		$ENV:PATH += ";$Directory"
+	}
 }
 
 function Install-Tools {
@@ -214,6 +216,40 @@ switch ( $Host.Name ) {
     }
 }
 
+# 
+# Setup a scripts path for all scripts. 
+#
+if(-not (Test-Path ".\Scripts\PowerShell") {
+  New-Item ".\Scripts\PowerShell" -ItemType Directory 
+  New-Item ".\Scripts\PowerShell\CoreModulesManual" -ItemType Directory
+  New-Item ".\Scripts\PowerShell\CoreModulesAuto" -ItemType Directory
+  New-Item ".\Scripts\PowerShell\CoreFunctions" -ItemType Directory 
+  
+}
+
+if (-not (Test-Path Scripts:)) {
+	New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
+}
+if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesManual)) )) {
+	$env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesManual) 
+}
+
+if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )) {
+	$env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
+}
+
+#
+# Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
+#
+Get-ChildItem $(Convert-Path Scripts:CoreModulesAuto) | Where-Object {$_.PsIsContainer} | %{ 
+	Import-Module $($_.FullName) -Force | out-null
+}
+
+#
+# Update Path to make life easier.
+#
+Get-Item Scripts:CoreFunctions | ? { $_.PsIsContainer } | % {Add-DirectoryToPath -Directory "$($_.FullName)" }
+Get-ChildItem Scripts:CoreFunctions* | ? { $_.PsIsContainer } | % {Add-DirectoryToPath -Directory "$($_.FullName)" }
 
 
 # Setup the prompt
