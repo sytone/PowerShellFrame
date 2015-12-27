@@ -278,3 +278,5 @@ function Global:prompt {
 	Write-Host "PS: $nextCommand $($executionContext.SessionState.Path.CurrentLocation)" -ForegroundColor Gray
 	"$('#' * ($nestedPromptLevel + 1)) "
 }
+
+Show-SystemInfo
