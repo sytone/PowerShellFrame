@@ -19,7 +19,8 @@ if(-not (Test-Path $psfLocalRoot)) {
   Invoke-WebRequest "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
 } else {
   Write-Host "Upgrading PSF"
-  Invoke-WebRequest "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1" -force
+  Remove-Item "$psfLocalRoot\localenv.ps1" -force
+  Invoke-WebRequest "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1" 
 }
 
 Write-Host "Validating the profile $profile"
