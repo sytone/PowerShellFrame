@@ -8,8 +8,7 @@ function elevate-process {
 	[System.Diagnostics.Process]::Start($psi);
 }
 
-function Restart-Host
-{
+function Restart-Host {
     [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
  
     Param (
@@ -77,21 +76,72 @@ set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
 
-# Set a nice title for the window. 
-$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-$wp = new-object System.Security.Principal.WindowsPrincipal($id)
-$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
-$IsAdmin = $wp.IsInRole($admin)
+switch ( $Host.Name ) {
+    'Windows PowerShell ISE Host' {
+        $Global:Color_Label = "DarkCyan"
+        $Global:Color_Value_1 = "Magenta"
+        $Global:Color_Value_2 = "DarkGreen"
+        $HostWidth = 80
 
-if(!$global:WindowTitlePrefix) {
-	if ($IsAdmin) {
-		$global:WindowTitlePrefix = "PowerShell (ADMIN) - "
-	} else {
-		$global:WindowTitlePrefix = "PowerShell - "
+        Import-Module ISEPack 
+
+        $PSISE.options.FontName = "Consolas"
+        $psise.Options.ConsolePaneBackgroundColor = "Black"
+        $psise.Options.ConsolePaneTextBackgroundColor = "Black"
+        $psise.Options.ConsolePaneForegroundColor = "LightGreen"
+
+        # watch for changes to the Files collection of the current Tab
+        register-objectevent $psise.CurrentPowerShellTab.Files collectionchanged -action {
+	        # iterate ISEFile objects
+        	$event.sender | % {
+        		# set private field which holds default encoding to ASCII
+        		$_.gettype().getfield("encoding","nonpublic,instance").setvalue($_, [text.encoding]::ascii)
+        	}
+        } | Out-null
+    }
+    default
+    {
+        $pshost = get-host
+        $global:ConsoleHost = ($pshost.Name -eq "ConsoleHost")
+        $pswindow = $pshost.ui.rawui
+
+        #Setup console colours I like!
+        $pswindow.ForegroundColor = "Green"
+        $pswindow.BackgroundColor = "Black"
+        $newsize = $pswindow.buffersize
+        $newsize.height = 3000
+        $newsize.width = 150
+        $pswindow.buffersize = $newsize
+
+        $newsize = $pswindow.windowsize
+        $newsize.height = 50
+        $newsize.width = 150
+        $pswindow.windowsize = $newsize
+
+        $Global:Color_Label = "Cyan"
+        $Global:Color_Value_1 = "Green"
+        $Global:Color_Value_2 = "Yellow"
+        $HostWidth = $Host.UI.RawUI.WindowSize.Width
+        
+        # Set a nice title for the window. 
+	$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+	$wp = new-object System.Security.Principal.WindowsPrincipal($id)
+	$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+	$IsAdmin = $wp.IsInRole($admin)
+	
+	if(!$global:WindowTitlePrefix) {
+		if ($IsAdmin) {
+			$global:WindowTitlePrefix = "PowerShell (ADMIN) - "
+		} else {
+			$global:WindowTitlePrefix = "PowerShell - "
+		}
 	}
+
+	$pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
+    }
 }
 
-$pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
+
 
 # Setup the prompt
 function Global:prompt {
@@ -104,5 +154,4 @@ function Global:prompt {
 	$nextCommand = $lastId + 1
 	Write-Host "PS: $nextCommand $($executionContext.SessionState.Path.CurrentLocation)" -ForegroundColor Gray
 	"$('#' * ($nestedPromptLevel + 1)) "
-
 }
