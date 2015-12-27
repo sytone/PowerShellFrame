@@ -54,8 +54,8 @@ function Update-PSF {
     Param(
         [switch]$WhatIf
     )
-    
-    iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))
+     $cacheTime =  ((Get-Date)-((Get-Date).AddYears(-60))).TotalSeconds 
+    iex ((new-object net.webclient).DownloadString("https://raw.github.com/sytone/PowerShellFrame/master/install.ps1?cache={0}" -f $cacheTime)))
     Restart-Host -Force
 
 }
