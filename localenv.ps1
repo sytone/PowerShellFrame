@@ -1,11 +1,11 @@
 # 
 function elevate-process {
-	$file, [string]$arguments = $args;
-	$psi = new-object System.Diagnostics.ProcessStartInfo $file;
-	$psi.Arguments = $arguments;
-	$psi.Verb = "runas";
-	$psi.WorkingDirectory = get-location;
-	[System.Diagnostics.Process]::Start($psi);
+  $file, [string]$arguments = $args;
+  $psi = new-object System.Diagnostics.ProcessStartInfo $file;
+  $psi.Arguments = $arguments;
+  $psi.Verb = "runas";
+  $psi.WorkingDirectory = get-location;
+  [System.Diagnostics.Process]::Start($psi);
 }
 
 function Get-SystemUptime ($computer = "$env:computername") {
@@ -140,13 +140,13 @@ function Show-SystemInfo {
     Write-Host "Running in admin mode"
   } else {
     Write-Host "Running in user mode"
-  }	
+  }  
 }
 
 function Add-DirectoryToPath($Directory) {
-	if (-not ($ENV:PATH.Contains($Directory))) {
-		$ENV:PATH += ";$Directory"
-	}
+  if (-not ($ENV:PATH.Contains($Directory))) {
+    $ENV:PATH += ";$Directory"
+  }
 }
 
 function Install-Tools {
@@ -154,20 +154,20 @@ function Install-Tools {
     Write-Host "Restart console as admin. [sudo powershell]"
     return
   }
-	
-	if($env:path -match "Chocolatey") {
-		Write-Host "Chocolatey already installed."
-	} else {
+  
+  if($env:path -match "Chocolatey") {
+    Write-Host "Chocolatey already installed."
+  } else {
     Write-Host "Installing Chocolatey..."
-	  iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
-	}
-	
-	if($env:path -match "Boxstarter") {
-		Write-Host "Boxstarter already installed."
-	} else {	  
-	  Write-Host "Installing Boxstarter..."
-	  CINST Boxstarter
-	}
+    iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+  }
+  
+  if($env:path -match "Boxstarter") {
+    Write-Host "Boxstarter already installed."
+  } else {    
+    Write-Host "Installing Boxstarter..."
+    CINST Boxstarter -y
+  }
 }
 
 
@@ -196,11 +196,11 @@ switch ( $Host.Name ) {
 
         # watch for changes to the Files collection of the current Tab
         register-objectevent $psise.CurrentPowerShellTab.Files collectionchanged -action {
-	        # iterate ISEFile objects
-        	$event.sender | % {
-        		# set private field which holds default encoding to ASCII
-        		$_.gettype().getfield("encoding","nonpublic,instance").setvalue($_, [text.encoding]::ascii)
-        	}
+          # iterate ISEFile objects
+          $event.sender | % {
+            # set private field which holds default encoding to ASCII
+            $_.gettype().getfield("encoding","nonpublic,instance").setvalue($_, [text.encoding]::ascii)
+          }
         } | Out-null
     }
     default
@@ -229,11 +229,11 @@ switch ( $Host.Name ) {
       
       # Set a nice title for the window. 
       if(!$global:WindowTitlePrefix) {
-      	if ($IsAdmin) {
-      		$global:WindowTitlePrefix = "PowerShell (ADMIN) - "
-      	} else {
-      		$global:WindowTitlePrefix = "PowerShell - "
-      	}
+        if ($IsAdmin) {
+          $global:WindowTitlePrefix = "PowerShell (ADMIN) - "
+        } else {
+          $global:WindowTitlePrefix = "PowerShell - "
+        }
       }
       
       $pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
@@ -252,21 +252,21 @@ if(-not (Test-Path ".\Scripts\PowerShell")) {
 }
 
 if (-not (Test-Path Scripts:)) {
-	New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
+  New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
 }
 if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesManual)) )) {
-	$env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesManual) 
+  $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesManual) 
 }
 
 if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )) {
-	$env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
+  $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
 }
 
 #
 # Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
 #
 Get-ChildItem $(Convert-Path Scripts:CoreModulesAuto) | Where-Object {$_.PsIsContainer} | %{ 
-	Import-Module $($_.FullName) -Force | out-null
+  Import-Module $($_.FullName) -Force | out-null
 }
 
 #
@@ -278,15 +278,15 @@ Get-ChildItem Scripts:CoreFunctions* | ? { $_.PsIsContainer } | % {Add-Directory
 
 # Setup the prompt
 function Global:prompt {
-	# The at sign creates an array in case only one history item exists.
-	$history = @(get-history)
-	if($history.Count -gt 0) {
-		$lastItem = $history[$history.Count - 1]
-		$lastId = $lastItem.Id
-	}
-	$nextCommand = $lastId + 1
-	Write-Host "PS: $nextCommand $($executionContext.SessionState.Path.CurrentLocation)" -ForegroundColor Gray
-	"$('#' * ($nestedPromptLevel + 1)) "
+  # The at sign creates an array in case only one history item exists.
+  $history = @(get-history)
+  if($history.Count -gt 0) {
+    $lastItem = $history[$history.Count - 1]
+    $lastId = $lastItem.Id
+  }
+  $nextCommand = $lastId + 1
+  Write-Host "PS: $nextCommand $($executionContext.SessionState.Path.CurrentLocation)" -ForegroundColor Gray
+  "$('#' * ($nestedPromptLevel + 1)) "
 }
 
 Show-SystemInfo
