@@ -8,6 +8,20 @@ function elevate-process {
 	[System.Diagnostics.Process]::Start($psi);
 }
 
+function Get-SystemUptime ($computer = "$env:computername") {
+  $lastboot = [System.Management.ManagementDateTimeconverter]::ToDateTime("$((gwmi  Win32_OperatingSystem -computername $computer).LastBootUpTime)")
+  $uptime = (Get-Date) - $lastboot
+  Write-Host "System Uptime for $computer is: " -NoNewline -ForegroundColor $Color_Value_2
+  Write-Host $uptime.days -NoNewline -ForegroundColor $Color_Label
+  Write-Host " days " -NoNewline -ForegroundColor $Color_Value_2
+  Write-Host $uptime.hours -NoNewline -ForegroundColor $Color_Label
+  Write-Host " hours " -NoNewline -ForegroundColor $Color_Value_2
+  Write-Host $uptime.minutes -NoNewline -ForegroundColor $Color_Label
+  Write-Host " minutes " -NoNewline -ForegroundColor $Color_Value_2
+  Write-Host $uptime.seconds -NoNewline -ForegroundColor $Color_Label
+  Write-Host " seconds" -ForegroundColor $Color_Value_2
+}
+
 function Restart-Host {
     [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
  
