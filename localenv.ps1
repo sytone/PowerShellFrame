@@ -60,6 +60,79 @@ function Update-PSF {
 
 }
 
+function Show-SystemInfo {
+  
+  # Grab some system Information to be displayed
+  $PSVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$PSHome\Powershell.exe").FileVersion
+  $IPAddress = @( Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIpGateway } )[0].IPAddress[0]
+  $Cert = Get-ChildItem -Path Cert:CurrentUser\my -CodeSigningCert
+  
+  $PreviousColor = $Host.UI.RawUI.ForegroundColor
+  #Display relevant information
+  Write-Host "ComputerName:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
+  Write-Host "$($env:COMPUTERNAME)" -ForegroundColor $Color_Value_2
+  Write-Host "IP Address:".PadRight(24," ") -ForeGroundColor $Color_Label -nonewline
+  Write-Host $IPAddress -ForeGroundColor $Color_Value_2
+  Write-Host "UserName:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
+  Write-Host "$env:UserDomain\$env:UserName" -ForegroundColor $Color_Value_2
+  Write-Host "PowerShell Version:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
+  Write-Host $PSVersion -ForegroundColor $Color_Value_2
+  Write-Host "Code Signing Cert:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
+  Write-Host $Cert.FriendlyName -ForegroundColor $Color_Value_2
+  Write-Host "Local Apps Path:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
+  Write-Host $localapps -ForegroundColor $Color_Value_2
+  Write-Host "Editor Path:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
+  Write-Host $notepad -ForegroundColor $Color_Value_2
+  
+  Write-Host "Snapins:".PadRight(24," ") -ForegroundColor $Color_Label -NoNewline
+  $StartingPosition = $Host.UI.RawUI.CursorPosition.X
+  Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
+  Get-PSSnapin | Format-Wide -autosize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} | %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1} 
+  
+  Write-Host "Modules:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
+  $StartingPosition = $Host.UI.RawUI.CursorPosition.X
+  Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
+  
+  Get-Module | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}
+  Get-Module -ListAvailable | Format-Wide -Column 3 | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_2} 
+  
+  Write-Host "Functions:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
+  $StartingPosition = $Host.UI.RawUI.CursorPosition.X
+  Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
+  Get-ChildItem Scripts:CoreFunctions* -Recurse | Select-Object Name | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $($_.Replace(".ps1",""))) -foregroundColor $Color_Value_1}  
+  
+  $Host.UI.RawUI.ForegroundColor =$PreviousColor
+  Write-Host ""
+  Write-Host ""
+
+  $LogicalDisk = @()
+  gwmi Win32_LogicalDisk -filter "DriveType='3'" | % {
+    $LogicalDisk += @($_ | Select @{n="Name";e={$_.Caption}},
+    @{n="Volume Label";e={$_.VolumeName}},
+    @{n="Used (GB)";e={"{0:N2}" -f ( ($_.Size/1GB) - ($_.FreeSpace/1GB) )}},
+    @{n="Free (GB)";e={"{0:N2}" -f ($_.FreeSpace/1GB)}},
+    @{n="Size (GB)";e={"{0:N2}" -f ($_.Size/1GB)}},
+    @{n="Free (%)";e={if($_.Size) { "{0:N2}" -f ( ($_.FreeSpace/1GB) / ($_.Size/1GB) * 100 )}else{"NAN"} }} )
+  } 
+
+  Write-Host "Disks:".PadRight(24," ") -foregroundcolor $Color_Label  -noNewLine
+  $StartingPosition = $Host.UI.RawUI.CursorPosition.X
+  Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
+  $LogicalDisk | format-table -AutoSize |  Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}  
+
+  Write-Host "Uptime:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
+  $StartingPosition = $Host.UI.RawUI.CursorPosition.X
+  $uptime = Get-SystemUptime
+  Write-Host $uptime -ForegroundColor $Color_Label
+
+  Write-Host "Admin Mode:`t`t" -ForegroundColor $Color_Label -nonewline
+  If ($IsAdmin) {
+    Write-Host "Running in admin mode"
+  } else {
+    Write-Host "Running in user mode"
+  }	
+}
+
 function Install-Tools {
 	Write-Host "Installing Chocolatey"
 	if(-not $env:path -match "Chocolatey") {
