@@ -234,10 +234,10 @@ switch ( $Host.Name ) {
 # Setup a scripts path for all scripts. 
 #
 if(-not (Test-Path ".\Scripts\PowerShell")) {
-  New-Item ".\Scripts\PowerShell" -ItemType Directory 
-  New-Item ".\Scripts\PowerShell\CoreModulesManual" -ItemType Directory
-  New-Item ".\Scripts\PowerShell\CoreModulesAuto" -ItemType Directory
-  New-Item ".\Scripts\PowerShell\CoreFunctions" -ItemType Directory 
+  New-Item ".\Scripts\PowerShell" -ItemType Directory | Out-Null
+  New-Item ".\Scripts\PowerShell\CoreModulesManual" -ItemType Directory | Out-Null
+  New-Item ".\Scripts\PowerShell\CoreModulesAuto" -ItemType Directory | Out-Null
+  New-Item ".\Scripts\PowerShell\CoreFunctions" -ItemType Directory | Out-Null
   
 }
 
