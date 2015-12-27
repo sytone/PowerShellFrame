@@ -60,5 +60,13 @@ function Restart-Host
     }
 }
 
+
+funcation Update-PSF {
+    [CmdletBinding()]
+    Param(
+        [switch]$WhatIf
+    )
+}
+
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
