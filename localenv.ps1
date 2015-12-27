@@ -66,6 +66,9 @@ funcation Update-PSF {
     Param(
         [switch]$WhatIf
     )
+    
+    iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))
+
 }
 
 set-alias sudo elevate-process;
