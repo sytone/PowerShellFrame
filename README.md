@@ -7,9 +7,15 @@ The PowerShellFram is a framework for installing and running powershell to be mo
 Installation
 -------------
 
-Run the following commands
+Run the following commands:
 
-    iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+Command Window
+    @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))" 
+5 
+ 
+
+PowerShell Window
+    iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))
     
 
 
