@@ -152,6 +152,7 @@ function Add-DirectoryToPath($Directory) {
 function Install-Tools {
   if(-not $Global:IsAdmin) {
     Write-Host "Restart console as admin. [sudo powershell]"
+    return
   }
 	
 	if($env:path -match "Chocolatey") {
