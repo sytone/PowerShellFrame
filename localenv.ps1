@@ -76,3 +76,33 @@ function Install-Tools {
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
+
+# Set a nice title for the window. 
+$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$wp = new-object System.Security.Principal.WindowsPrincipal($id)
+$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+$IsAdmin = $wp.IsInRole($admin)
+
+if(!$global:WindowTitlePrefix) {
+	if ($IsAdmin) {
+		$global:WindowTitlePrefix = "PowerShell (ADMIN) - "
+	} else {
+		$global:WindowTitlePrefix = "PowerShell - "
+	}
+}
+
+$pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
+
+# Setup the prompt
+function Global:prompt {
+	# The at sign creates an array in case only one history item exists.
+	$history = @(get-history)
+	if($history.Count -gt 0) {
+		$lastItem = $history[$history.Count - 1]
+		$lastId = $lastItem.Id
+	}
+	$nextCommand = $lastId + 1
+	Write-Host "PS: $nextCommand $($executionContext.SessionState.Path.CurrentLocation)" -ForegroundColor Gray
+	"$('#' * ($nestedPromptLevel + 1)) "
+
+}
