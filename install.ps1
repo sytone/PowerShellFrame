@@ -10,7 +10,8 @@ $psfLocalModules = Join-Path $psfLocalRoot "modules"
 
 function Get-FileFromWeb($url,$outfile) {
   $cacheTime =  ((Get-Date)-((Get-Date).AddYears(-60))).TotalSeconds
-  Invoke-WebRequest "$url?cache=$cacheTime" -outfile $outfile
+  
+  Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $outfile
 }
 
 
