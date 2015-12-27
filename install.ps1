@@ -8,6 +8,12 @@ $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
 $psfLocalTemp = Join-Path $psfLocalRoot "temp"
 $psfLocalModules = Join-Path $psfLocalRoot "modules"
 
+function Get-FileFromWeb($url,$outfile) {
+  $cacheTime =  ((Get-Date)-((Get-Date).AddYears(-60))).TotalSeconds
+  Invoke-WebRequest "$url?cache=$cacheTime" -outfile $outfile
+}
+
+
 Write-Host "Welcome to the PowerShelFrame (PSF) "
 Write-Host "This is being installed at: $psfLocalRoot"
 
@@ -16,11 +22,11 @@ if(-not (Test-Path $psfLocalRoot)) {
   New-Item $psfLocalRoot -Type Directory | Out-Null
   New-Item $psfLocalTemp -Type Directory | Out-Null
   New-Item $psfLocalModules -Type Directory | Out-Null 
-  Invoke-WebRequest "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
+  Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
 } else {
   Write-Host "Upgrading PSF"
   Remove-Item "$psfLocalRoot\localenv.ps1" -force
-  Invoke-WebRequest "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1" 
+  Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
 }
 
 Write-Host "Validating the profile $profile"
