@@ -10,11 +10,13 @@ Installation
 Run the following commands:
 
 Command Window
+
     @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))" 
-5 
+
  
 
 PowerShell Window
+
     iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))
     
 
