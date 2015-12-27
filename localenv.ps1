@@ -150,16 +150,30 @@ function Add-DirectoryToPath($Directory) {
 }
 
 function Install-Tools {
-	Write-Host "Installing Chocolatey"
-	if(-not $env:path -match "Chocolatey") {
+  if(-not $Global:IsAdmin) {
+    Write-Host "Restart console as admin. [sudo powershell]"
+  }
+	
+	if($env:path -match "Chocolatey") {
+		Write-Host "Chocolatey already installed."
+	} else {
+    Write-Host "Installing Chocolatey..."
 	  iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
 	}
 	
-	Write-Host "Installing Boxstarter"
-	if($env:path -match "Boxstarter" -and -not $env:path -match "Boxstarter" ) {
+	if($env:path -match "Boxstarter") {
+		Write-Host "Boxstarter already installed."
+	} else {	  
+	  Write-Host "Installing Boxstarter..."
 	  CINST Boxstarter
 	}
 }
+
+
+$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$wp = new-object System.Security.Principal.WindowsPrincipal($id)
+$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+$Global:IsAdmin = $wp.IsInRole($admin)
 
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
@@ -190,43 +204,38 @@ switch ( $Host.Name ) {
     }
     default
     {
-        $pshost = get-host
-        $global:ConsoleHost = ($pshost.Name -eq "ConsoleHost")
-        $pswindow = $pshost.ui.rawui
-
-        #Setup console colours I like!
-        $pswindow.ForegroundColor = "Green"
-        $pswindow.BackgroundColor = "Black"
-        $newsize = $pswindow.buffersize
-        $newsize.height = 3000
-        $newsize.width = 150
-        $pswindow.buffersize = $newsize
-
-        $newsize = $pswindow.windowsize
-        $newsize.height = 50
-        $newsize.width = 150
-        $pswindow.windowsize = $newsize
-
-        $Global:Color_Label = "Cyan"
-        $Global:Color_Value_1 = "Green"
-        $Global:Color_Value_2 = "Yellow"
-        $HostWidth = $Host.UI.RawUI.WindowSize.Width
-        
-        # Set a nice title for the window. 
-	$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-	$wp = new-object System.Security.Principal.WindowsPrincipal($id)
-	$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
-	$IsAdmin = $wp.IsInRole($admin)
-	
-	if(!$global:WindowTitlePrefix) {
-		if ($IsAdmin) {
-			$global:WindowTitlePrefix = "PowerShell (ADMIN) - "
-		} else {
-			$global:WindowTitlePrefix = "PowerShell - "
-		}
-	}
-
-	$pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
+      $pshost = get-host
+      $global:ConsoleHost = ($pshost.Name -eq "ConsoleHost")
+      $pswindow = $pshost.ui.rawui
+      
+      #Setup console colours I like!
+      $pswindow.ForegroundColor = "Green"
+      $pswindow.BackgroundColor = "Black"
+      $newsize = $pswindow.buffersize
+      $newsize.height = 3000
+      $newsize.width = 150
+      $pswindow.buffersize = $newsize
+      
+      $newsize = $pswindow.windowsize
+      $newsize.height = 50
+      $newsize.width = 150
+      $pswindow.windowsize = $newsize
+      
+      $Global:Color_Label = "Cyan"
+      $Global:Color_Value_1 = "Green"
+      $Global:Color_Value_2 = "Yellow"
+      $HostWidth = $Host.UI.RawUI.WindowSize.Width
+      
+      # Set a nice title for the window. 
+      if(!$global:WindowTitlePrefix) {
+      	if ($IsAdmin) {
+      		$global:WindowTitlePrefix = "PowerShell (ADMIN) - "
+      	} else {
+      		$global:WindowTitlePrefix = "PowerShell - "
+      	}
+      }
+      
+      $pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
     }
 }
 
