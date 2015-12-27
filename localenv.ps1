@@ -12,7 +12,7 @@ function Restart-Host
 {
     [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
  
-    Param(
+    Param (
         [switch]$AsAdministrator,
         [switch]$Force
     )
@@ -24,37 +24,25 @@ function Restart-Host
     if ($AsAdministrator) { $params.Verb = 'runas' }
     if ($cmdArgs) { $params.ArgumentList = $cmdArgs }
  
-   if ($Force -or $PSCmdlet.ShouldProcess($proc.Name,"Restart the console"))
-   {
-        if ($host.Name -eq 'Windows PowerShell ISE Host' -and $psISE.PowerShellTabs.Files.IsSaved -contains $false)
-        {
-            if ($Force -or $PSCmdlet.ShouldProcess('Unsaved work detected?','Unsaved work detected. Save changes?','Confirm'))
-           {
-                foreach ($IseTab in $psISE.PowerShellTabs)
-                {
+   if ($Force -or $PSCmdlet.ShouldProcess($proc.Name,"Restart the console")) {
+        if ($host.Name -eq 'Windows PowerShell ISE Host' -and $psISE.PowerShellTabs.Files.IsSaved -contains $false) {
+            if ($Force -or $PSCmdlet.ShouldProcess('Unsaved work detected?','Unsaved work detected. Save changes?','Confirm')) {
+                foreach ($IseTab in $psISE.PowerShellTabs) {
                     $IseTab.Files | ForEach-Object {
- 
-                        if ($_.IsUntitled -and !$_.IsSaved)
-                        {
+                        if ($_.IsUntitled -and !$_.IsSaved) {
                             $_.SaveAs($_.FullPath,[System.Text.Encoding]::UTF8)
-                        }
-                        elseif(!$_.IsSaved)
-                        {
+                        } elseif(!$_.IsSaved) {
                             $_.Save()
                         }
                     }
                 }
-            }
-            else
-            {
-                foreach ($IseTab in $psISE.PowerShellTabs)
-                {
+            } else {
+                foreach ($IseTab in $psISE.PowerShellTabs) {
                     $unsavedFiles = $IseTab.Files | Where-Object IsSaved -eq $false
                     $unsavedFiles | ForEach-Object {$IseTab.Files.Remove($_,$true)}
                 }
             }
         }
- 
         Start-Process @params
         $proc.CloseMainWindow()
     }
@@ -68,6 +56,7 @@ function Update-PSF {
     )
     
     iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))
+    Restart-Host -Force
 
 }
 
