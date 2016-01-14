@@ -212,15 +212,18 @@ if (-not (Test-Path Psf:)) {
 }
 
 if (-not (Test-Path Psf:\config.xml)) {
-  $configuration = New-Object -TypeName System.Object 
-  $configuration | Add-Member -MemberType noteProperty -Name "DevelopmentFolder" -Value (Join-Path $env:USERPROFILE "dev")
-  $configuration | Add-Member -MemberType noteProperty -Name "WindowWidth" -Value 150 
-  $configuration | Add-Member -MemberType noteProperty -Name "WindowHeight" -Value 50
-  $configuration | Add-Member -MemberType noteProperty -Name "WindowHeightBuffer" -Value 1000
-  $configuration | ConvertTo-Xml -As String | Set-Content -Path Psf:\config.xml -Force
+  $hash = @{            
+      DevelopmentFolder = (Join-Path $env:USERPROFILE "dev")                
+      WindowWidth = 150
+      WindowHeight = 50
+      WindowHeightBuffer = 1000
+  }     
+  
+  $configuration = New-Object PSObject -Property $hash
+  $configuration | Export-Clixml Psf:\config.xml
 }
 
-
+$Global:PsfConfiguration  = Import-Clixml Psf:\config.xml
 
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
@@ -228,17 +231,17 @@ set-alias updatepsf Update-PSF;
 
 switch ( $Host.Name ) {
     'Windows PowerShell ISE Host' {
-        $Global:Color_Label = "DarkCyan"
-        $Global:Color_Value_1 = "Magenta"
-        $Global:Color_Value_2 = "DarkGreen"
+        $Global:Color_Label = $Global:PsfConfiguration.IseColorLabel
+        $Global:Color_Value_1 = $Global:PsfConfiguration.IseColorValue1
+        $Global:Color_Value_2 = $Global:PsfConfiguration.IseColorValue2
         $HostWidth = 80
 
         Import-Module ISEPack 
 
-        $PSISE.options.FontName = "Consolas"
-        $psise.Options.ConsolePaneBackgroundColor = "Black"
-        $psise.Options.ConsolePaneTextBackgroundColor = "Black"
-        $psise.Options.ConsolePaneForegroundColor = "LightGreen"
+        $PSISE.options.FontName = $Global:PsfConfiguration.IseFontName
+        $psise.Options.ConsolePaneBackgroundColor = $Global:PsfConfiguration.IseBackgroundColor
+        $psise.Options.ConsolePaneTextBackgroundColor = $Global:PsfConfiguration.IseTextBackgroundColor
+        $psise.Options.ConsolePaneForegroundColor = $Global:PsfConfiguration.IseForegroundColor
 
         # watch for changes to the Files collection of the current Tab
         register-objectevent $psise.CurrentPowerShellTab.Files collectionchanged -action {
@@ -259,24 +262,24 @@ switch ( $Host.Name ) {
       #$pswindow.ForegroundColor = "Green"
       #Write-Host $pswindow.BackgroundColor
       #$pswindow.BackgroundColor = "Black"
-      if($pswindow.buffersize.height -ne 3000 -and $pswindow.buffersize.width -ne 150 ) {
+      if($pswindow.buffersize.height -ne $Global:PsfConfiguration.WindowHeightBuffer -and $pswindow.buffersize.width -ne $Global:PsfConfiguration.WindowWidth ) {
         $newsize = $pswindow.buffersize
-        $newsize.height = 3000
-        $newsize.width = 150
+        $newsize.height = $Global:PsfConfiguration.WindowHeightBuffer
+        $newsize.width = $Global:PsfConfiguration.WindowWidth
         $pswindow.buffersize = $newsize
       }
       
-      if($pswindow.windowsize.height -ne 50 -and $pswindow.windowsize.width -ne 150 ) {
+      if($pswindow.windowsize.height -ne $Global:PsfConfiguration.WindowHeight -and $pswindow.windowsize.width -ne $Global:PsfConfiguration.WindowWidth ) {
         $newsize = $pswindow.windowsize
-        $newsize.height = 50
-        $newsize.width = 150
+        $newsize.height = $Global:PsfConfiguration.WindowHeight
+        $newsize.width = $Global:PsfConfiguration.WindowWidth
         $pswindow.windowsize = $newsize
       }
 
       
-      $Global:Color_Label = "Cyan"
-      $Global:Color_Value_1 = "Green"
-      $Global:Color_Value_2 = "Yellow"
+      $Global:Color_Label = $Global:PsfConfiguration.HostColorLabel
+      $Global:Color_Value_1 = $Global:PsfConfiguration.HostColorValue1
+      $Global:Color_Value_2 = $Global:PsfConfiguration.HostColorValue2
       $HostWidth = $Host.UI.RawUI.WindowSize.Width
       
       # Set a nice title for the window. 
