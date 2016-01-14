@@ -211,6 +211,15 @@ if (-not (Test-Path Psf:)) {
   New-PSDrive -name Psf -psprovider FileSystem -root (Join-Path $env:USERPROFILE "psf") -Description "PowerShellFrame Folder" -Scope Global | Out-Null
 }
 
+if (-not (Test-Path Psf:\config.xml)) {
+  $configuration = New-Object -TypeName System.Object 
+  $configuration | Add-Member -MemberType noteProperty -Name "DevelopmentFolder" -Value (Join-Path $env:USERPROFILE "dev")
+  $configuration | Add-Member -MemberType noteProperty -Name "WindowWidth" -Value 150 
+  $configuration | Add-Member -MemberType noteProperty -Name "WindowHeight" -Value 50
+  $configuration | Add-Member -MemberType noteProperty -Name "WindowHeightBuffer" -Value 1000
+  $configuration | ConvertTo-Xml -As String | Set-Content -Path Psf:\config.xml -Force
+}
+
 
 
 set-alias sudo elevate-process;
