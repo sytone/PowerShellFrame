@@ -1,4 +1,4 @@
-# 
+# Internal functions that are used all over the place and not in a module. 
 function elevate-process {
   $file, [string]$arguments = $args;
   $psi = new-object System.Diagnostics.ProcessStartInfo $file;
@@ -141,6 +141,12 @@ function Show-SystemInfo {
   } else {
     Write-Host "Running in user mode"
   }  
+  
+  Write-Host "Location:`t`t" -ForegroundColor $Color_Label -nonewline
+  Write-Host $MyInvocation.MyCommand.Path -ForegroundColor $Color_Label
+  Write-Host "Location:`t`t" -ForegroundColor $Color_Label -nonewline
+  Write-Host (Get-Location) -ForegroundColor $Color_Label
+  
 }
 
 function Add-DirectoryToPath($Directory) {
