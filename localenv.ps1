@@ -229,7 +229,7 @@ function Set-LocationDevelopment {
   Set-Location $Global:PsfConfiguration.DevelopmentFolder
 }
 
-set-alias cddev Set-LocationDevelopment;
+set-alias cdev Set-LocationDevelopment;
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
