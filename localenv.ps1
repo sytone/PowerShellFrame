@@ -210,17 +210,23 @@ switch ( $Host.Name ) {
       $pswindow = $pshost.ui.rawui
       
       #Setup console colours I like!
-      $pswindow.ForegroundColor = "Green"
-      $pswindow.BackgroundColor = "Black"
-      $newsize = $pswindow.buffersize
-      $newsize.height = 3000
-      $newsize.width = 150
-      $pswindow.buffersize = $newsize
+      #$pswindow.ForegroundColor = "Green"
+      Write-Host $pswindow.BackgroundColor
+      #$pswindow.BackgroundColor = "Black"
+      if($pswindow.buffersize.height -ne 3000 -and $pswindow.buffersize.width -ne 150 ) {
+        $newsize = $pswindow.buffersize
+        $newsize.height = 3000
+        $newsize.width = 150
+        $pswindow.buffersize = $newsize
+      }
       
-      $newsize = $pswindow.windowsize
-      $newsize.height = 50
-      $newsize.width = 150
-      $pswindow.windowsize = $newsize
+      if($pswindow.windowsize.height -ne 50 -and $pswindow.windowsize.width -ne 150 ) {
+        $newsize = $pswindow.windowsize
+        $newsize.height = 50
+        $newsize.width = 150
+        $pswindow.windowsize = $newsize
+      }
+
       
       $Global:Color_Label = "Cyan"
       $Global:Color_Value_1 = "Green"
