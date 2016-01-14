@@ -225,6 +225,11 @@ if (-not (Test-Path Psf:\config.xml)) {
 
 $Global:PsfConfiguration  = Import-Clixml Psf:\config.xml
 
+function Set-LocationDevelopment {
+  Set-Location $Global:PsfConfiguration.DevelopmentFolder
+}
+
+set-alias cddev Set-LocationDevelopment;
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
