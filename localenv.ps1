@@ -208,7 +208,7 @@ if (-not (Test-Path Scripts:)) {
 }
 
 if (-not (Test-Path Psf:)) {
-  New-PSDrive -name Scripts -psprovider FileSystem -root (Join-Path $env:USERPROFILE "psf") -Description "PowerShellFrame Folder" -Scope Global | Out-Null
+  New-PSDrive -name Psf -psprovider FileSystem -root (Join-Path $env:USERPROFILE "psf") -Description "PowerShellFrame Folder" -Scope Global | Out-Null
 }
 
 
