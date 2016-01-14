@@ -143,8 +143,6 @@ function Show-SystemInfo {
   }  
   
   Write-Host "Location:`t`t" -ForegroundColor $Color_Label -nonewline
-  Write-Host $MyInvocation.MyCommand.Path -ForegroundColor $Color_Label
-  Write-Host "Location:`t`t" -ForegroundColor $Color_Label -nonewline
   Write-Host (Get-Location) -ForegroundColor $Color_Label
   
 }
@@ -154,6 +152,15 @@ function Add-DirectoryToPath($Directory) {
     $ENV:PATH += ";$Directory"
   }
 }
+
+function Set-PsfConfig($key,$value) {
+  
+}
+
+function Get-PsfConfig($key) {
+
+}
+
 
 function Install-Tools {
   if(-not $Global:IsAdmin) {
