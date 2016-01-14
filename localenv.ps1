@@ -211,7 +211,7 @@ switch ( $Host.Name ) {
       
       #Setup console colours I like!
       #$pswindow.ForegroundColor = "Green"
-      Write-Host $pswindow.BackgroundColor
+      #Write-Host $pswindow.BackgroundColor
       #$pswindow.BackgroundColor = "Black"
       if($pswindow.buffersize.height -ne 3000 -and $pswindow.buffersize.width -ne 150 ) {
         $newsize = $pswindow.buffersize
