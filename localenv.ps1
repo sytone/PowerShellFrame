@@ -189,6 +189,30 @@ $wp = new-object System.Security.Principal.WindowsPrincipal($id)
 $admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
 $Global:IsAdmin = $wp.IsInRole($admin)
 
+# 
+# Test the Scripts directories are in place.  
+#
+if(-not (Test-Path ".\Scripts\PowerShell")) {
+  New-Item ".\Scripts\PowerShell" -ItemType Directory | Out-Null
+  New-Item ".\Scripts\PowerShell\CoreModulesManual" -ItemType Directory | Out-Null
+  New-Item ".\Scripts\PowerShell\CoreModulesAuto" -ItemType Directory | Out-Null
+  New-Item ".\Scripts\PowerShell\CoreFunctions" -ItemType Directory | Out-Null
+  
+}
+
+#
+# Create the drives for scripts and PSF
+#
+if (-not (Test-Path Scripts:)) {
+  New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
+}
+
+if (-not (Test-Path Psf:)) {
+  New-PSDrive -name Scripts -psprovider FileSystem -root (Join-Path $env:USERPROFILE "psf") -Description "PowerShellFrame Folder" -Scope Global | Out-Null
+}
+
+
+
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
@@ -259,20 +283,10 @@ switch ( $Host.Name ) {
     }
 }
 
-# 
-# Setup a scripts path for all scripts. 
-#
-if(-not (Test-Path ".\Scripts\PowerShell")) {
-  New-Item ".\Scripts\PowerShell" -ItemType Directory | Out-Null
-  New-Item ".\Scripts\PowerShell\CoreModulesManual" -ItemType Directory | Out-Null
-  New-Item ".\Scripts\PowerShell\CoreModulesAuto" -ItemType Directory | Out-Null
-  New-Item ".\Scripts\PowerShell\CoreFunctions" -ItemType Directory | Out-Null
-  
-}
 
-if (-not (Test-Path Scripts:)) {
-  New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
-}
+#
+# Pull the scripts into the modules path for easy load. This will mean ability to sync between machines in the future. 
+#
 if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesManual)) )) {
   $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesManual) 
 }
