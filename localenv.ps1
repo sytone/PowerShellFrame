@@ -262,14 +262,14 @@ switch ( $Host.Name ) {
       #$pswindow.ForegroundColor = "Green"
       #Write-Host $pswindow.BackgroundColor
       #$pswindow.BackgroundColor = "Black"
-      if($pswindow.buffersize.height -ne $Global:PsfConfiguration.WindowHeightBuffer -and $pswindow.buffersize.width -ne $Global:PsfConfiguration.WindowWidth ) {
+      if($pswindow.buffersize.height -le $Global:PsfConfiguration.WindowHeightBuffer -and $pswindow.buffersize.width -le $Global:PsfConfiguration.WindowWidth ) {
         $newsize = $pswindow.buffersize
         $newsize.height = $Global:PsfConfiguration.WindowHeightBuffer
         $newsize.width = $Global:PsfConfiguration.WindowWidth
         $pswindow.buffersize = $newsize
       }
       
-      if($pswindow.windowsize.height -ne $Global:PsfConfiguration.WindowHeight -and $pswindow.windowsize.width -ne $Global:PsfConfiguration.WindowWidth ) {
+      if($pswindow.windowsize.height -le $Global:PsfConfiguration.WindowHeight -and $pswindow.windowsize.width -le $Global:PsfConfiguration.WindowWidth ) {
         $newsize = $pswindow.windowsize
         $newsize.height = $Global:PsfConfiguration.WindowHeight
         $newsize.width = $Global:PsfConfiguration.WindowWidth
