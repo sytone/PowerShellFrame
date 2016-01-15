@@ -2,6 +2,7 @@
 # Read through it first or just trust the code.. Your choice, your risk. 
 
 # @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))" && SET PATH=%PATH%;%systemdrive%\psf
+cd $env:USERPROFILE 
 
 $psfRemoteRoot = "https://raw.github.com/sytone/PowerShellFrame/master"
 $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
@@ -19,18 +20,45 @@ Write-Host "Welcome to the PowerShelFrame (PSF) "
 Write-Host "This is being installed at: $psfLocalRoot"
 
 if(-not (Test-Path $psfLocalRoot)) {
-  Write-Host "Creating PSF"
+  Write-Host "- Creating PSF"
   New-Item $psfLocalRoot -Type Directory | Out-Null
   New-Item $psfLocalTemp -Type Directory | Out-Null
   New-Item $psfLocalModules -Type Directory | Out-Null 
   Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
 } else {
-  Write-Host "Upgrading PSF"
+  Write-Host "- Upgrading PSF"
   Remove-Item "$psfLocalRoot\localenv.ps1" -force
   Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
 }
 
-Write-Host "Validating the profile $profile"
+Write-Host "- Checking Scripts"
+# 
+# Test the Scripts directories are in place.  
+#
+$ScriptsRoot = (Join-Path $env:USERPROFILE "Scripts")  
+if(-not (Test-Path $ScriptsRoot)) {
+    New-Item $ScriptsRoot -ItemType Directory | Out-Null
+}
+
+$PowerShellScriptsRoot = (Join-Path $ScriptsRoot "PowerShell")  
+if(-not (Test-Path $PowerShellScriptsRoot)) {
+  New-Item $PowerShellScriptsRoot -ItemType Directory | Out-Null
+  New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesManual") -ItemType Directory | Out-Null
+  New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto") -ItemType Directory | Out-Null
+  New-Item (Join-Path $PowerShellScriptsRoot "CoreFunctions") -ItemType Directory | Out-Null
+}
+
+$AhkScriptsRoot = (Join-Path $ScriptsRoot "AHK")  
+if(-not (Test-Path $AhkScriptsRoot)) {
+  New-Item $AhkScriptsRoot -ItemType Directory | Out-Null
+}
+
+# These are core modules used by PSF. 
+Write-Host "- Adding/Updating PSF Modules"
+New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey") -ItemType Directory | Out-Null
+Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/AutoHotkey/AutoHotkey.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey\localenv.ps1")
+
+Write-Host "- Validating the profile $profile"
 $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
 if ((Test-Path $profile) -eq $false) {
   New-Item $profile -type file -force -ea 0 | Out-Null
