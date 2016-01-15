@@ -23,41 +23,50 @@ function Get-SystemUptime ($computer = "$env:computername") {
 }
 
 function Restart-Host {
-    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='High')]
+    [CmdletBinding(SupportsShouldProcess = $true,ConfirmImpact='High')]
  
     Param (
         [switch]$AsAdministrator,
         [switch]$Force
     )
+    
+    begin {    
+        Set-StrictMode -Version Latest    
+        $proc = Get-Process -Id $PID
+        Write-Verbose "Restarting $($proc.Name)"    
+    }    
+
+    process {
  
-    $proc = Get-Process -Id $PID
-    $cmdArgs = [Environment]::GetCommandLineArgs() | Select-Object -Skip 1
- 
-    $params = @{ FilePath = $proc.Path }
-    if ($AsAdministrator) { $params.Verb = 'runas' }
-    if ($cmdArgs) { $params.ArgumentList = $cmdArgs }
- 
-   if ($Force -or $PSCmdlet.ShouldProcess($proc.Name,"Restart the console")) {
-        if ($host.Name -eq 'Windows PowerShell ISE Host' -and $psISE.PowerShellTabs.Files.IsSaved -contains $false) {
-            if ($Force -or $PSCmdlet.ShouldProcess('Unsaved work detected?','Unsaved work detected. Save changes?','Confirm')) {
-                foreach ($IseTab in $psISE.PowerShellTabs) {
-                    $IseTab.Files | ForEach-Object {
-                        if ($_.IsUntitled -and !$_.IsSaved) {
-                            $_.SaveAs($_.FullPath,[System.Text.Encoding]::UTF8)
-                        } elseif(!$_.IsSaved) {
-                            $_.Save()
+        $proc = Get-Process -Id $PID
+        $cmdArgs = [Environment]::GetCommandLineArgs() | Select-Object -Skip 1
+    
+        $params = @{ FilePath = $proc.Path }
+        if ($AsAdministrator) { $params.Verb = 'runas' }
+        if ($cmdArgs) { $params.ArgumentList = $cmdArgs }
+    
+        if ($Force -or $PSCmdlet.ShouldProcess($proc.Name,"Restart the console")) {
+            if ($host.Name -eq 'Windows PowerShell ISE Host' -and $psISE.PowerShellTabs.Files.IsSaved -contains $false) {
+                if ($Force -or $PSCmdlet.ShouldProcess('Unsaved work detected?','Unsaved work detected. Save changes?','Confirm')) {
+                    foreach ($IseTab in $psISE.PowerShellTabs) {
+                        $IseTab.Files | ForEach-Object {
+                            if ($_.IsUntitled -and !$_.IsSaved) {
+                                $_.SaveAs($_.FullPath,[System.Text.Encoding]::UTF8)
+                            } elseif(!$_.IsSaved) {
+                                $_.Save()
+                            }
                         }
                     }
-                }
-            } else {
-                foreach ($IseTab in $psISE.PowerShellTabs) {
-                    $unsavedFiles = $IseTab.Files | Where-Object IsSaved -eq $false
-                    $unsavedFiles | ForEach-Object {$IseTab.Files.Remove($_,$true)}
+                } else {
+                    foreach ($IseTab in $psISE.PowerShellTabs) {
+                        $unsavedFiles = $IseTab.Files | Where-Object IsSaved -eq $false
+                        $unsavedFiles | ForEach-Object {$IseTab.Files.Remove($_,$true)}
+                    }
                 }
             }
+            Start-Process @params
+            $proc.CloseMainWindow()
         }
-        Start-Process @params
-        $proc.CloseMainWindow()
     }
 }
 
@@ -217,6 +226,16 @@ if (-not (Test-Path Psf:\config.xml)) {
       WindowWidth = 150
       WindowHeight = 50
       WindowHeightBuffer = 1000
+      IseColorLabel = "Cyan"
+      IseColorValue1 = "Green"
+      IseColorValue2 = "Yellow"
+      IseFontName = "Consolas"
+      IseBackgroundColor = "DarkMagenta"
+      IseTextBackgroundColor = "DarkMagenta"
+      IseForegroundColor = "DarkYellow"
+      HostColorLabel = "Cyan"
+      HostColorValue1 = "Green"
+      HostColorValue2 = "Yellow"
   }     
   
   $configuration = New-Object PSObject -Property $hash
