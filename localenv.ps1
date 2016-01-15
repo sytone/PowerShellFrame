@@ -162,13 +162,28 @@ function Add-DirectoryToPath($Directory) {
   }
 }
 
-function Set-PsfConfig($key,$value) {
-  
+function Set-PsfConfig($Key,$Value) {
+    if($Global:PsfConfiguration.$key -eq $null) {
+        $Global:PsfConfiguration | Add-Member $key $value
+    } else {
+        $Global:PsfConfiguration.$key = $value
+    }
+    $Global:PsfConfiguration | Export-Clixml Psf:\config.xml
 }
 
-function Get-PsfConfig($key) {
-
+function Get-PsfConfig($Key=$null) {
+    if($key -eq $null) {
+        $Global:PsfConfiguration
+    } else {
+        $Global:PsfConfiguration.$key
+    }
 }
+
+function Remove-PsfConfig($Key) {
+     $Global:PsfConfiguration.PSObject.Properties.Remove($key)
+     $Global:PsfConfiguration | Export-Clixml Psf:\config.xml
+}
+
 
 
 function Install-Tools {
@@ -222,7 +237,8 @@ if (-not (Test-Path Psf:)) {
 
 if (-not (Test-Path Psf:\config.xml)) {
   $hash = @{            
-      DevelopmentFolder = (Join-Path $env:USERPROFILE "dev")                
+      DevelopmentFolder = (Join-Path $env:USERPROFILE "dev")     
+      ToolsPath = (Join-Path $env:USERPROFILE "tools")           
       WindowWidth = 150
       WindowHeight = 50
       WindowHeightBuffer = 1000
@@ -242,7 +258,11 @@ if (-not (Test-Path Psf:\config.xml)) {
   $configuration | Export-Clixml Psf:\config.xml
 }
 
-$Global:PsfConfiguration  = Import-Clixml Psf:\config.xml
+$Global:PsfConfiguration = Import-Clixml Psf:\config.xml
+
+if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
+    New-Item -Path (Get-PsfConfig -Key ToolsPath) -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
+}
 
 function Set-LocationDevelopment {
   Set-Location $Global:PsfConfiguration.DevelopmentFolder
