@@ -1,3 +1,5 @@
+cd $env:USERPROFILE 
+
 # Internal functions that are used all over the place and not in a module. 
 function elevate-process {
   $file, [string]$arguments = $args;
@@ -212,17 +214,6 @@ $id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
 $wp = new-object System.Security.Principal.WindowsPrincipal($id)
 $admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
 $Global:IsAdmin = $wp.IsInRole($admin)
-
-# 
-# Test the Scripts directories are in place.  
-#
-if(-not (Test-Path ".\Scripts\PowerShell")) {
-  New-Item ".\Scripts\PowerShell" -ItemType Directory | Out-Null
-  New-Item ".\Scripts\PowerShell\CoreModulesManual" -ItemType Directory | Out-Null
-  New-Item ".\Scripts\PowerShell\CoreModulesAuto" -ItemType Directory | Out-Null
-  New-Item ".\Scripts\PowerShell\CoreFunctions" -ItemType Directory | Out-Null
-  
-}
 
 #
 # Create the drives for scripts and PSF
