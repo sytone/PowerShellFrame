@@ -263,6 +263,14 @@ function Set-LocationTools {
   Set-Location (Get-PsfConfig -Key ToolsPath)
 }
 
+function Update-PsfGit($m) {
+    Push-Location (Join-Path (Get-PsfConfig -Key DevelopmentFolder) "PowerShellFrame")
+    git add .
+    git commit -m $m
+    git push
+    Pop-Location
+}
+
 set-alias cdev Set-LocationDevelopment;
 set-alias ctools Set-LocationTools;
 set-alias sudo elevate-process;
