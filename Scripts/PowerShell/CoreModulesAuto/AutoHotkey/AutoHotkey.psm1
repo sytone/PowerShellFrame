@@ -9,4 +9,7 @@ function Install-AutoHotkey {
     $helper = New-Object -ComObject Shell.Application
     $files = $helper.NameSpace("$f.zip").Items()
     $helper.NameSpace($Destination).CopyHere($files)     
+    
+    assoc .ahk=AutoHotkeyScript
+    ftype AutoHotkeyScript="$Destination\AutoHotkey.exe" "%1" %*
 }
