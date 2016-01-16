@@ -256,10 +256,15 @@ if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
 }
 
 function Set-LocationDevelopment {
-  Set-Location $Global:PsfConfiguration.DevelopmentFolder
+  Set-Location (Get-PsfConfig -Key DevelopmentFolder)
+}
+
+function Set-LocationTools {
+  Set-Location (Get-PsfConfig -Key ToolsPath)
 }
 
 set-alias cdev Set-LocationDevelopment;
+set-alias ctools Set-LocationTools;
 set-alias sudo elevate-process;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
