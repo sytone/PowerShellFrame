@@ -10,6 +10,13 @@ function Install-AutoHotkey {
     $files = $helper.NameSpace("$f.zip").Items()
     $helper.NameSpace($Destination).CopyHere($files)     
     
-    assoc .ahk=AutoHotkeyScript
-    ftype AutoHotkeyScript="$Destination\AutoHotkey.exe" "%1" %*
+    if($Global:IsAdmin) {
+        cmd /c "assoc .ahk=AutoHotkeyScript"
+        cmd /c "ftype AutoHotkeyScript=""$Destination\AutoHotkey.exe"" ""%1"" %*"
+    } else {
+        Write-Host "WARNING: AHK file type may not be registered as this is not running as a admin process" -ForegroundColor Red
+        Write-Host " Run the following commands in a elevated console (not powershell)"
+        Write-Host " assoc .ahk=AutoHotkeyScript" -ForegroundColor Green
+        Write-Host " ftype AutoHotkeyScript=""$Destination\AutoHotkey.exe"" ""%1"" %*" -ForegroundColor Green
+    }
 }
