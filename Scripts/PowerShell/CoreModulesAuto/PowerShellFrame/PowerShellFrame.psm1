@@ -94,12 +94,11 @@ drivestoredirect:s:
     }
  }
  
-
 function script:Resolve-Aliases {
     param($line)
     [System.Management.Automation.PSParser]::Tokenize($line,[ref]$null) | % {
         if($_.Type -eq "Command") {
-            $cmd = @(which $_.Content)[0]
+            $cmd = @(Get-Command $_.Content)[0]
             if($cmd.CommandType -eq "Alias") {
                 $line = $line.Remove( $_.StartColumn -1, $_.Length ).Insert( $_.StartColumn -1, $cmd.Definition )
             }
