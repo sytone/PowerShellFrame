@@ -319,6 +319,7 @@ switch ( $Host.Name ) {
       #$pswindow.BackgroundColor = "Black"
       if($pswindow.buffersize.height -le $Global:PsfConfiguration.WindowHeightBuffer -and $pswindow.buffersize.width -le $Global:PsfConfiguration.WindowWidth ) {
         try {
+            trap {"Error trapped"}
             $newsize = $pswindow.buffersize
             $newsize.height = $Global:PsfConfiguration.WindowHeightBuffer
             $newsize.width = $Global:PsfConfiguration.WindowWidth
@@ -332,6 +333,7 @@ switch ( $Host.Name ) {
       
       if($pswindow.windowsize.height -le $Global:PsfConfiguration.WindowHeight -and $pswindow.windowsize.width -le $Global:PsfConfiguration.WindowWidth ) {
         try {
+            trap {"Error trapped"}
             $newsize = $pswindow.windowsize
             $newsize.height = $Global:PsfConfiguration.WindowHeight
             $newsize.width = $Global:PsfConfiguration.WindowWidth
