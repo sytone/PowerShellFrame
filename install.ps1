@@ -63,12 +63,12 @@ if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey
 Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/AutoHotkey/AutoHotkey.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey\AutoHotkey.psm1")
 
 
-if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShelFrame"))) { 
-    New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShelFrame") -ItemType Directory | Out-Null
+if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
+    New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -ItemType Directory | Out-Null
 } else {
-    Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShelFrame\PowerShelFrame.psm1") -force | Out-Null
+    Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -force | Out-Null
 }
-Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/PowerShelFrame/PowerShelFrame.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShelFrame\PowerShelFrame.psm1")
+Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/PowerShellFrame/PowerShellFrame.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1")
 
 Write-Host "- Validating the profile $profile"
 $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
