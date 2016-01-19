@@ -270,7 +270,7 @@ function Set-LocationTools {
   Set-LocationWithPathCheck (Get-PsfConfig -Key ToolsPath)
 }
 
-function Update-PsfGit($m) {
+function Update-PsfGit($m = "Lazy hack and commit") {
     Push-Location (Join-Path (Get-PsfConfig -Key DevelopmentFolder) "PowerShellFrame")
     git add .
     git commit -m $m
