@@ -255,12 +255,19 @@ if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
     New-Item -Path (Get-PsfConfig -Key ToolsPath) -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 }
 
+function Set-LocationWithPathCheck($Path) {
+  if(-not (Test-Path $Path)) {
+    New-Item -Path $Path -ItemType Directory
+  }
+  Set-Location $Path
+}
+
 function Set-LocationDevelopment {
-  Set-Location (Get-PsfConfig -Key DevelopmentFolder)
+  Set-LocationWithPathCheck (Get-PsfConfig -Key DevelopmentFolder)
 }
 
 function Set-LocationTools {
-  Set-Location (Get-PsfConfig -Key ToolsPath)
+  Set-LocationWithPathCheck (Get-PsfConfig -Key ToolsPath)
 }
 
 function Update-PsfGit($m) {
