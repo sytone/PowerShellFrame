@@ -318,26 +318,21 @@ switch ( $Host.Name ) {
       #Write-Host $pswindow.BackgroundColor
       #$pswindow.BackgroundColor = "Black"
       if($pswindow.buffersize.height -le $Global:PsfConfiguration.WindowHeightBuffer -and $pswindow.buffersize.width -le $Global:PsfConfiguration.WindowWidth ) {
-          {
             trap {"Error trapped"}
             $newsize = $pswindow.buffersize
             $newsize.height = $Global:PsfConfiguration.WindowHeightBuffer
             $newsize.width = $Global:PsfConfiguration.WindowWidth
             $pswindow.buffersize = $newsize
-          }
       }
       
       if($pswindow.windowsize.height -le $Global:PsfConfiguration.WindowHeight -and $pswindow.windowsize.width -le $Global:PsfConfiguration.WindowWidth ) {
-          {
             trap {"Error trapped"}
             $newsize = $pswindow.windowsize
             $newsize.height = $Global:PsfConfiguration.WindowHeight
             $newsize.width = $Global:PsfConfiguration.WindowWidth
             $pswindow.windowsize = $newsize            
-          }
       }
 
-      
       $Global:Color_Label = $Global:PsfConfiguration.HostColorLabel
       $Global:Color_Value_1 = $Global:PsfConfiguration.HostColorValue1
       $Global:Color_Value_2 = $Global:PsfConfiguration.HostColorValue2
