@@ -405,3 +405,7 @@ function Global:prompt {
 }
 
 Show-SystemInfo
+
+if((Test-Path ".\localprofile.ps1")) {
+    . .\localprofile.ps1
+}
