@@ -318,30 +318,27 @@ switch ( $Host.Name ) {
       #Write-Host $pswindow.BackgroundColor
       #$pswindow.BackgroundColor = "Black"
       if($pswindow.buffersize.height -le $Global:PsfConfiguration.WindowHeightBuffer -and $pswindow.buffersize.width -le $Global:PsfConfiguration.WindowWidth ) {
-        try
-        {
+        try {
             $newsize = $pswindow.buffersize
             $newsize.height = $Global:PsfConfiguration.WindowHeightBuffer
             $newsize.width = $Global:PsfConfiguration.WindowWidth
             $pswindow.buffersize = $newsize
-        }
-        finally
-        {
+        } catch [Exception] {
+            write-host $_.Exception.Message; 
+        } finally {
         }
 
       }
       
       if($pswindow.windowsize.height -le $Global:PsfConfiguration.WindowHeight -and $pswindow.windowsize.width -le $Global:PsfConfiguration.WindowWidth ) {
-        try
-        {
+        try {
             $newsize = $pswindow.windowsize
             $newsize.height = $Global:PsfConfiguration.WindowHeight
             $newsize.width = $Global:PsfConfiguration.WindowWidth
             $pswindow.windowsize = $newsize            
-        }
-        finally
-        {
-            
+        } catch [Exception] {
+            write-host $_.Exception.Message; 
+        } finally {
         }
 
       }
