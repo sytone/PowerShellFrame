@@ -1,0 +1,3 @@
+Run the following to have local only profile settings, this file is dot sourced if found: notepad .\localprofile.ps1
+Smile!
+Look at the clouds

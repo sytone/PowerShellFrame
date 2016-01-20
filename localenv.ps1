@@ -395,3 +395,6 @@ Show-SystemInfo
 if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }
+
+$tip = (cat .\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat .\tips.txt).Count + 1))]
+Write-Host "Tip: $tip" -ForegroundColor $Color_Label 
