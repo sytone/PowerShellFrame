@@ -113,13 +113,13 @@ function alias {
     $alias,$cmd = [string]::join(" ",$args).split("=",2) | % { $_.trim()}
     $cmd = Resolve-Aliases $cmd
     
-    New-Item -Path function: -Name "Global:Alias$Alias" -Options "AllScope" -Value @"
+    $f = New-Item -Path function: -Name "Global:Alias$Alias" -Options "AllScope" -Value @"
 Invoke-Expression '$cmd `$args '
     ###ALIAS###
 "@ 
     # Invoke-Expression '$cmd `$args'
 
-    Set-Alias -Name $Alias -Value "Alias$Alias" -Description "A UNIX-style alias using functions" -Option "AllScope" -scope Global -passThru 
+    $a = Set-Alias -Name $Alias -Value "Alias$Alias" -Description "A UNIX-style alias using functions" -Option "AllScope" -scope Global -passThru 
 }
 
 function unalias([string]$Alias,[switch]$Force){ 
