@@ -397,4 +397,4 @@ if((Test-Path ".\localprofile.ps1")) {
 }
 
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
-Write-Host "Tip: $tip" -ForegroundColor $Color_Value_2
+Write-Host "`n`n -= Tip =- $tip `n`n"
