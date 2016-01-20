@@ -111,17 +111,15 @@ function script:Resolve-Aliases {
 function alias {
     # pull together all the args and then split on =
     $alias,$cmd = [string]::join(" ",$args).split("=",2) | % { $_.trim()}
-
-    if($Host.Version.Major -ge 2) {
-       $cmd = Resolve-Aliases $cmd
-    }
+    $cmd = Resolve-Aliases $cmd
+    
     New-Item -Path function: -Name "Global:Alias$Alias" -Options "AllScope" -Value @"
-Invoke-Expression '$cmd'
+Invoke-Expression '$cmd `$args '
     ###ALIAS###
-"@
+"@ 
     # Invoke-Expression '$cmd `$args'
 
-    Set-Alias -Name $Alias -Value "Alias$Alias" -Description "A UNIX-style alias using functions" -Option "AllScope" -scope Global -passThru
+    Set-Alias -Name $Alias -Value "Alias$Alias" -Description "A UNIX-style alias using functions" -Option "AllScope" -scope Global -passThru 
 }
 
 function unalias([string]$Alias,[switch]$Force){ 
