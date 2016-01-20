@@ -166,7 +166,7 @@ function alias {
     $cmd = Resolve-Aliases $cmd
     
     $f = New-Item -Path function: -Name "Global:Alias$Alias" -Options "AllScope" -Value @"
-Invoke-Expression '$cmd `$args '
+Invoke-Expression '$cmd `@args '
     ###ALIAS###
 "@ 
     # Invoke-Expression '$cmd `$args'
