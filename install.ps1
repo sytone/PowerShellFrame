@@ -25,10 +25,12 @@ if(-not (Test-Path $psfLocalRoot)) {
   New-Item $psfLocalTemp -Type Directory | Out-Null
   New-Item $psfLocalModules -Type Directory | Out-Null 
   Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
+  Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 } else {
   Write-Host "- Upgrading PSF"
   Remove-Item "$psfLocalRoot\localenv.ps1" -force
   Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
+  Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 }
 
 Write-Host "- Checking Scripts"
