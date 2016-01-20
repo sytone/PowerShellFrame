@@ -1,3 +1,7 @@
 Run the following to have local only profile settings, this file is dot sourced if found: notepad .\localprofile.ps1
 Smile!
 Look at the clouds
+cdev will move you to a dev folder under your user profile
+ctools will move you to a tools folder under your user profile
+sudo will start a new process as admin. EG: sudo powershell
+reload will restart the powershell window and reload profile. 
