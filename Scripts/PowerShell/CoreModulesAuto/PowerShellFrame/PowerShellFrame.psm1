@@ -1,5 +1,45 @@
- 
+#requires -version 4
 
+<#
+.SYNOPSIS
+  Starts the remote desktop process with options set. 
+
+.DESCRIPTION
+  Allows you to start a remote desktop process and set options not made avliable
+  by mstsc like the gateway host name. 
+
+.PARAMETER FullAddress
+  A valid computer name, IPv4 address, or IPv6 address - Specifies the remote computer to which you want to connect
+
+.PARAMETER FullScreen
+  If specified remote desktop will be full screen.
+
+.PARAMETER Resolution
+  Screen resolution if not full screen. 1024x768 by default.
+
+.PARAMETER UseMultimon
+  Use all monitors.
+
+.PARAMETER GatewayHostName
+  Use a gateway for the connection.
+  
+.INPUTS
+  None
+
+.OUTPUTS
+  None
+
+.NOTES
+  Version:        1.0
+  Author:         Sytone
+  Creation Date:  1/18/2016
+  Purpose/Change: Initial script development
+
+.EXAMPLE
+  Connect-RemoteDesktop -FullAddress mrserver -FullScreen -UseMultimon
+  
+  Connect-RemoteDesktop -FullAddress mrserver -FullScreen -UseMultimon -GatewayHostName my.gateway.com
+#>
  function Connect-RemoteDesktop {
     [CmdletBinding()]
  
@@ -107,8 +147,20 @@ function script:Resolve-Aliases {
     $line
 }
 
-
+<#
+.SYNOPSIS
+    Creates a alias that can take params lik UNIX
+.DESCRIPTION
+    Creates a alias that can take params like UNIX alias command, it will
+    also place the $arg at the end so you can add commands. 
+.EXAMPLE
+    C:\PS> alias fred=start-process winword
+    C:\PS> fred helloworld.docx
+    
+    This will start work with whatever you add at the end. 
+#>
 function alias {
+    
     # pull together all the args and then split on =
     $alias,$cmd = [string]::join(" ",$args).split("=",2) | % { $_.trim()}
     $cmd = Resolve-Aliases $cmd
