@@ -10,7 +10,7 @@ $psfLocalTemp = Join-Path $psfLocalRoot "temp"
 $psfLocalModules = Join-Path $psfLocalRoot "modules"
 
 function Get-FileFromWeb($url,$outfile) {
-  $cacheTime =  ((Get-Date)-((Get-Date).AddYears(-60))).TotalSeconds
+  $cacheTime =  Get-Random -Maximum 10000000 -Minimum 0
   
   Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $outfile
 }
