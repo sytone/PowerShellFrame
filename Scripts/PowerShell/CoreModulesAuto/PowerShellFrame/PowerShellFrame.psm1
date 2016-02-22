@@ -23,6 +23,9 @@
 .PARAMETER GatewayHostName
   Use a gateway for the connection.
   
+.PARAMETER UserName
+  Username to use to log into the remote computer. 
+
 .INPUTS
   None
 
@@ -53,7 +56,9 @@
         [Parameter(HelpMessage="Use all monitors.")]
         [Switch]$UseMultimon,
         [Parameter(HelpMessage="Use a gateway for the connection.")]
-        [String]$GatewayHostName
+        [String]$GatewayHostName,
+        [Parameter(HelpMessage="Username to use to log into the remote computer.")]
+        [String]$UserName
     )
     
     begin { 
@@ -127,6 +132,9 @@ rdgiskdcproxy:i:0
 kdcproxyname:s:
 drivestoredirect:s:
 "@ 
+        if($UserName) {
+            $rdpString += "username:s:$UserName`n"
+        }
         $f = New-TemporaryFile
         $rdpFile = "{0}.rdp" -f $f.FullName
         $rdpString | Set-Content $rdpFile
