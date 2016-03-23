@@ -1,7 +1,12 @@
+# This is the core logic for the framework, it only has critical commands in it and the rest should come from 
+# modules in the system.
+
+# Move to the user profile for all actions. 
 cd $env:USERPROFILE 
 
 # Internal functions that are used all over the place and not in a module. 
-function elevate-process {
+
+function Start-ElevatedProcess {
   $file, [string]$arguments = $args;
   $psi = new-object System.Diagnostics.ProcessStartInfo $file;
   $psi.Arguments = $arguments;
@@ -280,7 +285,7 @@ function Update-PsfGit($m = "Lazy hack and commit") {
 
 set-alias cdev Set-LocationDevelopment;
 set-alias ctools Set-LocationTools;
-set-alias sudo elevate-process;
+set-alias sudo Start-ElevatedProcess;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
 
