@@ -11,6 +11,10 @@ Installation
 
 Run the following commands:
 
+As these scripts are not signed you need to allow them to run. 
+    
+    Set-ExecutionPolicy -ExecutionPolicy Unrestricted
+
 Command Window
 
     @powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.github.com/sytone/PowerShellFrame/master/install.ps1'))" 
