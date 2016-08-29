@@ -97,7 +97,7 @@ function Update-PSF {
         [switch]$WhatIf
     )
     $cacheTime =  Get-Random
-    $downloadUrl = "https://raw.github.com/sytone/PowerShellFrame/master/install.ps1?cache={0}" -f $cacheTime
+    $downloadUrl = "https://raw.githubusercontent.com/sytone/PowerShellFrame/master/install.ps1?cache={0}" -f $cacheTime
     iex ((new-object net.webclient).DownloadString($downloadUrl))
     Restart-Host -Force
 
