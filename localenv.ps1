@@ -432,9 +432,10 @@ if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
   }
 }
 
-if((Get-PsfConfig -Key 'GITHUB_TOKEN') -eq 'enabled') {
+if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
   $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
   ipmo GithubFS
+  Write-Host "Enabled Github Filesystem Provider"
 }
 
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
