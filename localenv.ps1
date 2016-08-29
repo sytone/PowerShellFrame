@@ -274,6 +274,11 @@ if (-not (Test-Path Psf:\config.xml)) {
   $configuration | Export-Clixml Psf:\config.xml
 }
 
+if(!(Get-PsfConfig -Key 'CMDER_ENABLED')) {
+  Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'unknown'
+}
+
+
 $Global:PsfConfiguration = Import-Clixml Psf:\config.xml
 
 if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
@@ -437,6 +442,19 @@ if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
   $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
   ipmo GithubFS
   Write-Host " $([char]0x2714) Enabled Github Filesystem Provider"
+}
+
+#Install cmder?
+#https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip
+if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown') {
+  $enableCmder = [bool](Read-Choice "Do you want to enable the cmder - http://cmder.net/ ?" "&No","&Yes" -Default 1)
+  if($enableCmder) {
+    Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
+    $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
+    if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory}
+    Invoke-WebRequest -Uri 'https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip' -OutFile (Join-Path $path 'cmder_mini.zip')
+    Expand-Archive -Path (Join-Path $path 'cmder_mini.zip') -DestinationPath $path
+  }
 }
 
 # Friendly Tips!
