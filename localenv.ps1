@@ -421,7 +421,7 @@ if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }
 
-
+#Github Setup
 if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
   $enablegithubprovider = Read-Host "Do you want to enable the github file system access in powershell? (Y/N)"
   if($enablegithubprovider -eq 'Y' -or $enablegithubprovider -eq 'y') {
@@ -438,6 +438,7 @@ if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
   Write-Host "Enabled Github Filesystem Provider"
 }
 
+# Friendly Tips!
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
 Write-Host " $tip `n`n"
