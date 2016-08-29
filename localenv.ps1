@@ -421,6 +421,14 @@ if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }
 
+if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
+  Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
+  $githubToken = Read-Host -Prompt "Paste the token from github in here."
+  Set-PsfConfig -Key 'GITHUB_TOKEN' -Value $githubToken
+}
+$env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
+
+
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
 Write-Host " $tip `n`n"
