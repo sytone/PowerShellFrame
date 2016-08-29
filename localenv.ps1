@@ -432,10 +432,11 @@ if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
   }
 }
 
+Write-Host ""
 if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
   $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
   ipmo GithubFS
-  Write-Host "Enabled Github Filesystem Provider"
+  Write-Host " $([char]0x2714) Enabled Github Filesystem Provider"
 }
 
 # Friendly Tips!
