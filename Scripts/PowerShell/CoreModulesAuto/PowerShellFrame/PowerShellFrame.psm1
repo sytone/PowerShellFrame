@@ -248,12 +248,12 @@ function Read-Choice {
     [Switch]$Passthru
     )
     begin {
-    if($ChoicesWithHelp) { 
-        [System.Collections.DictionaryEntry[]]$choices = $ChoicesWithHelp.GetEnumerator() | %{$_}
-    }
+        if($ChoicesWithHelp) { 
+            [System.Collections.DictionaryEntry[]]$choices = $ChoicesWithHelp.GetEnumerator() | %{$_}
+        }
     }
     process {
-    $Descriptions = [System.Management.Automation.Host.ChoiceDescription[]]( $(
+        $Descriptions = [System.Management.Automation.Host.ChoiceDescription[]]( $(
                         if($choices -is [String[]]) {
                             foreach($choice in $choices) {
                             New-Object System.Management.Automation.Host.ChoiceDescription $choice
@@ -265,17 +265,17 @@ function Read-Choice {
                         }
                     ) )
                     
-    # Passing an array as the $Default triggers multiple choice prompting.
-    if(!$MultipleChoice) { [int]$Default = $Default[0] }
+        # Passing an array as the $Default triggers multiple choice prompting.
+        if(!$MultipleChoice) { [int]$Default = $Default[0] }
 
-    [int[]]$Answer = $Host.UI.PromptForChoice($Caption,$Message,$Descriptions,$Default)
+        [int[]]$Answer = $Host.UI.PromptForChoice($Caption,$Message,$Descriptions,$Default)
 
-    if($Passthru -or !($choices -is [String[]])) {
-        Write-Verbose "$Answer"
-        Write-Output  $Descriptions[$Answer]
-    } else {
-        Write-Output $Answer
-    }
+        if($Passthru -or !($choices -is [String[]])) {
+            Write-Verbose "$Answer"
+            Write-Output  $Descriptions[$Answer]
+        } else {
+            Write-Output $Answer
+        }
     }
 
 }

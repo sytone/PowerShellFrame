@@ -274,12 +274,11 @@ if (-not (Test-Path Psf:\config.xml)) {
   $configuration | Export-Clixml Psf:\config.xml
 }
 
+$Global:PsfConfiguration = Import-Clixml Psf:\config.xml
+
 if(!(Get-PsfConfig -Key 'CMDER_ENABLED')) {
   Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'unknown'
 }
-
-
-$Global:PsfConfiguration = Import-Clixml Psf:\config.xml
 
 if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
     New-Item -Path (Get-PsfConfig -Key ToolsPath) -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
