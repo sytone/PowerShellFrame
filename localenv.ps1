@@ -276,12 +276,20 @@ if (-not (Test-Path Psf:\config.xml)) {
 
 $Global:PsfConfiguration = Import-Clixml Psf:\config.xml
 
-if(!(Get-PsfConfig -Key 'CMDER_ENABLED')) {
-  Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'unknown'
-}
-
+# Setup tools directory and path. 
 if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
     New-Item -Path (Get-PsfConfig -Key ToolsPath) -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
+}
+
+$env_Path = [System.Environment]::GetEnvironmentVariable("Path", "User")
+$newPath = (Get-Item -LiteralPath (Get-PsfConfig -Key ToolsPath)).FullName
+if (($env_Path -split ';') -notcontains "$newPath") {
+  if ($env_Path) {
+    $env_Path = $env_Path + ';'
+  }
+  $env_Path += "$newPath"
+  [System.Environment]::SetEnvironmentVariable("Path", $env_Path, "User")
+  $env:Path = $env_Path 
 }
 
 function Set-LocationWithPathCheck($Path) {
@@ -427,8 +435,8 @@ if((Test-Path ".\localprofile.ps1")) {
 
 #Github Setup
 if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
-  $enablegithubprovider = Read-Host "Do you want to enable the github file system access in powershell? (Y/N)"
-  if($enablegithubprovider -eq 'Y' -or $enablegithubprovider -eq 'y') {
+  $enablegithubprovider = [bool](Read-Choice "Do you want to enable the github file system access in powershell?" "&No","&Yes" -Default 1)
+  if($enablegithubprovider) {
     Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'enabled'
     Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
     $githubToken = Read-Host -Prompt "Paste the token from github in here."
@@ -453,6 +461,9 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown') {
     if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory}
     Invoke-WebRequest -Uri 'https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip' -OutFile (Join-Path $path 'cmder_mini.zip')
     Expand-Archive -Path (Join-Path $path 'cmder_mini.zip') -DestinationPath $path
+    $TargetFile = (Join-Path $path 'cmder.exe')
+    $ShortcutFile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder.cmd"
+    "@ECHO OFF`n$TargetFile" | Out-File -FilePath $ShortcutFile -Force -Encoding ascii
   }
 }
 
