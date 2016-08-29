@@ -18,8 +18,10 @@ $psfLocalModules = Join-Path $psfLocalRoot "modules"
 
 function Get-FileFromWeb($url,$outfile) {
   $cacheTime =  Get-Random -Maximum 10000000 -Minimum 0
-  
-  Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $outfile
+  $tmpfile = Join-Path $outfile ".tmp"
+  Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $tmpfile
+  Remove-Item -Path $tmpfile -Force
+  Move-Item -Path $tmpfile -Destination $outfile -Force
 }
 
 
@@ -31,7 +33,7 @@ if(-not (Test-Path $psfLocalRoot)) {
   New-Item $psfLocalRoot -Type Directory | Out-Null
   New-Item $psfLocalTemp -Type Directory | Out-Null
   New-Item $psfLocalModules -Type Directory | Out-Null 
-  Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
+  Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1.tmp"
   Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 } else {
   Write-Host "- Upgrading PSF"
@@ -98,8 +100,10 @@ if ((Test-Path $profile) -eq $false) {
 }
 
 # Install any packages. 
-
-find-package -Name GithubFS | Install-Package -Force -Scope CurrentUser
+$githubfs = Get-Module -Name GithubFS -ListAvailable
+if(!$githubfs) {
+  find-package -Name GithubFS | Install-Package -Force -Scope CurrentUser
+}
 
 
 
