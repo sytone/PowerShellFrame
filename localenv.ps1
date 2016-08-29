@@ -421,13 +421,21 @@ if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }
 
-if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
-  Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
-  $githubToken = Read-Host -Prompt "Paste the token from github in here."
-  Set-PsfConfig -Key 'GITHUB_TOKEN' -Value $githubToken
-}
-$env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
 
+if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
+  $enablegithubprovider = Read-Host "Do you want to enable the github file system access in powershell? (Y/N)"
+  if($enablegithubprovider -eq 'Y' -or $enablegithubprovider -eq 'y') {
+    Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'enabled'
+    Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
+    $githubToken = Read-Host -Prompt "Paste the token from github in here."
+    Set-PsfConfig -Key 'GITHUB_TOKEN' -Value $githubToken
+  }
+}
+
+if((Get-PsfConfig -Key 'GITHUB_TOKEN') -eq 'enabled') {
+  $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
+  ipmo GithubFS
+}
 
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
