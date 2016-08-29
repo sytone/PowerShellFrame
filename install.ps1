@@ -19,9 +19,9 @@ $psfLocalModules = Join-Path $psfLocalRoot "modules"
 function Get-FileFromWeb($url,$outfile) {
   $cacheTime =  Get-Random -Maximum 10000000 -Minimum 0
   $tmpfile = Join-Path $outfile ".tmp"
-  Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $tmpfile
-  Remove-Item -Path $tmpfile -Force
-  Move-Item -Path $tmpfile -Destination $outfile -Force
+  Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $outfile
+  #Remove-Item -Path $tmpfile -Force
+  #Move-Item -Path $tmpfile -Destination $outfile -Force
 }
 
 
