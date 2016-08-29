@@ -37,7 +37,9 @@ if(-not (Test-Path $psfLocalRoot)) {
   Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 } else {
   Write-Host "- Upgrading PSF"
-  Remove-Item "$psfLocalRoot\localenv.ps1" -force
+  if((Test-Path "$psfLocalRoot\localenv.ps1")) {
+    Remove-Item "$psfLocalRoot\localenv.ps1" -Force
+  }
   Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
   Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 }
@@ -69,7 +71,9 @@ Write-Host "- Adding/Updating PSF Modules"
 if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey"))) { 
     New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey") -ItemType Directory | Out-Null
 } else {
+  if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey\AutoHotkey.psm1"))) {
     Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey\AutoHotkey.psm1") -force | Out-Null
+  }
 }
 Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/AutoHotkey/AutoHotkey.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey\AutoHotkey.psm1")
 
@@ -77,7 +81,9 @@ Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/AutoHotk
 if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
     New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -ItemType Directory | Out-Null
 } else {
+  if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1"))) {
     Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -force | Out-Null
+  }
 }
 Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/PowerShellFrame/PowerShellFrame.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1")
 
