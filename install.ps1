@@ -11,7 +11,7 @@ if(!$psGallery) {
 
 cd $env:USERPROFILE 
 
-$psfRemoteRoot = "https://raw.github.com/sytone/PowerShellFrame/master"
+$psfRemoteRoot = "https://raw.githubusercontent.com/sytone/PowerShellFrame/master"
 $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
 $psfLocalTemp = Join-Path $psfLocalRoot "temp"
 $psfLocalModules = Join-Path $psfLocalRoot "modules"
