@@ -448,7 +448,7 @@ Write-Host ""
 if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
   $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
   ipmo GithubFS
-  Write-Host " $([char]0x2714) Enabled Github Filesystem Provider"
+  Write-Host " $([char]0x221A) Enabled Github Filesystem Provider"
 }
 
 #Install cmder?
