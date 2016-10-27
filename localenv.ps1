@@ -315,7 +315,7 @@ function Update-PsfGit($m = "Lazy hack and commit") {
     Pop-Location
 }
 
-set-alias cdev Set-LocationDevelopment;
+set-alias cdev Set-LocationDevelopment
 set-alias ctools Set-LocationTools;
 set-alias sudo Start-ElevatedProcess;
 set-alias reload Restart-Host;
