@@ -302,7 +302,6 @@ switch ( $Host.Name ) {
 #
 # Add variable for onedrive from registry if installed and mapping drive.  
 #
-Write-host "Getting OneDrive path... " -NoNewline
 $onedrive = (Get-ItemProperty -Path "hkcu:\Software\Microsoft\OneDrive\" -Name UserFolder).UserFolder
 if($onedrive) {
   if (-not (Test-Path OneDrive:)) {
@@ -310,17 +309,11 @@ if($onedrive) {
   }
 }
 
-
-
-
-
-
 #
 # Update Path to make life easier.
 #
 Get-Item Scripts:CoreFunctions | ? { $_.PsIsContainer } | % {Add-DirectoryToPath -Directory "$($_.FullName)" }
 Get-ChildItem Scripts:CoreFunctions* | ? { $_.PsIsContainer } | % {Add-DirectoryToPath -Directory "$($_.FullName)" }
-
 
 # Setup the prompt
 function Global:prompt {
