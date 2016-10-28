@@ -2,12 +2,49 @@
 # modules in the system.
 
 # Move to the user profile for all actions. 
-cd $env:USERPROFILE 
+cd $env:USERPROFILE
 
-# Internal functions that are used all over the place and not in a module. 
+# Setup drive paths so we can pull modules in ASAP. 
+if (-not (Test-Path Scripts:)) {
+  New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
+}
+
+if (-not (Test-Path Psf:)) {
+  New-PSDrive -name Psf -psprovider FileSystem -root (Join-Path $env:USERPROFILE "psf") -Description "PowerShellFrame Folder" -Scope Global | Out-Null
+}
+
+#
+# Pull the scripts into the modules path for easy load. This will mean ability to sync between machines in the future. 
+#
+if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesManual)) )) {
+  $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesManual) 
+}
+
+if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )) {
+  $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
+}
 
 
+#
+# Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
+#
+Get-ChildItem $(Convert-Path Scripts:CoreModulesAuto) | Where-Object {$_.PsIsContainer} | %{ 
+  Import-Module $($_.FullName) -Force | out-null
+}
 
+# Get the security context for the running shell. 
+$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$wp = new-object System.Security.Principal.WindowsPrincipal($id)
+$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+$Global:IsAdmin = $wp.IsInRole($admin)
+
+
+# We now should have the PSF module loaded. Any commands in this file are just related to the console or aliases. 
+
+<#
+.SYNOPSIS
+  Pulls down the latest version of the console bits. Will use module functions if avaliable.  
+#>
 function Update-PSF {
     [CmdletBinding()]
     Param(
@@ -16,10 +53,14 @@ function Update-PSF {
     $cacheTime =  Get-Random
     $downloadUrl = "https://raw.githubusercontent.com/sytone/PowerShellFrame/master/install.ps1?cache={0}" -f $cacheTime
     iex ((new-object net.webclient).DownloadString($downloadUrl))
-    Restart-Host -Force
-
+    if(-not (Test-Path Function:\Restart-Host)) {"You will need to restart the console instance manually."} 
+    else {Restart-Host -Force}
 }
 
+<#
+.SYNOPSIS
+  Shows a nice formatted output of system state at startup. All native PowerShell functions.  
+#>
 function Show-SystemInfo {
   
   # Grab some system Information to be displayed
@@ -105,36 +146,10 @@ function Show-SystemInfo {
 
 }
 
-function Add-DirectoryToPath($Directory) {
-  if (-not ($ENV:PATH.Contains($Directory))) {
-    $ENV:PATH += ";$Directory"
-  }
-}
 
-function Set-PsfConfig($Key,$Value) {
-    if($Global:PsfConfiguration.$key -eq $null) {
-        $Global:PsfConfiguration | Add-Member $key $value
-    } else {
-        $Global:PsfConfiguration.$key = $value
-    }
-    $Global:PsfConfiguration | Export-Clixml Psf:\config.xml
-}
-
-function Get-PsfConfig($Key=$null) {
-    if($key -eq $null) {
-        $Global:PsfConfiguration
-    } else {
-        $Global:PsfConfiguration.$key
-    }
-}
-
-function Remove-PsfConfig($Key) {
-     $Global:PsfConfiguration.PSObject.Properties.Remove($key)
-     $Global:PsfConfiguration | Export-Clixml Psf:\config.xml
-}
-
-
-
+#
+# NEed to workout where tools and dev items go...
+#
 function Install-Tools {
   if(-not $Global:IsAdmin) {
     Write-Host "Restart console as admin. [sudo powershell]"
@@ -157,22 +172,8 @@ function Install-Tools {
 }
 
 
-$id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-$wp = new-object System.Security.Principal.WindowsPrincipal($id)
-$admin = [System.Security.Principal.WindowsBuiltInRole]::Administrator
-$Global:IsAdmin = $wp.IsInRole($admin)
 
-#
-# Create the drives for scripts and PSF
-#
-if (-not (Test-Path Scripts:)) {
-  New-PSDrive -name Scripts -psprovider FileSystem -root .\Scripts\PowerShell -Description "Scripts Folder" -Scope Global | Out-Null
-}
-
-if (-not (Test-Path Psf:)) {
-  New-PSDrive -name Psf -psprovider FileSystem -root (Join-Path $env:USERPROFILE "psf") -Description "PowerShellFrame Folder" -Scope Global | Out-Null
-}
-
+# Create configuration if missing with defaults.
 if (-not (Test-Path Psf:\config.xml)) {
   $hash = @{            
       DevelopmentFolder = (Join-Path $env:USERPROFILE "dev")     
@@ -202,23 +203,11 @@ $Global:PsfConfiguration = Import-Clixml Psf:\config.xml
 if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
     New-Item -Path (Get-PsfConfig -Key ToolsPath) -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 }
+Add-DirectoryToPath -Directory (Get-Item -LiteralPath (Get-PsfConfig -Key ToolsPath)).FullName 
 
-$env_Path = [System.Environment]::GetEnvironmentVariable("Path", "User")
-$newPath = (Get-Item -LiteralPath (Get-PsfConfig -Key ToolsPath)).FullName
-if (($env_Path -split ';') -notcontains "$newPath") {
-  if ($env_Path) {
-    $env_Path = $env_Path + ';'
-  }
-  $env_Path += "$newPath"
-  [System.Environment]::SetEnvironmentVariable("Path", $env_Path, "User")
-  $env:Path = $env_Path 
-}
-
-function Set-LocationWithPathCheck($Path) {
-  if(-not (Test-Path $Path)) {
-    New-Item -Path $Path -ItemType Directory
-  }
-  Set-Location $Path
+# Setup dev directory
+if(-not(Test-Path (Get-PsfConfig -Key DevelopmentFolder))) {
+    New-Item -Path (Get-PsfConfig -Key DevelopmentFolder) -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
 }
 
 function Set-LocationDevelopment {
@@ -324,23 +313,7 @@ if($onedrive) {
 
 
 
-#
-# Pull the scripts into the modules path for easy load. This will mean ability to sync between machines in the future. 
-#
-if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesManual)) )) {
-  $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesManual) 
-}
 
-if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )) {
-  $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
-}
-
-#
-# Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
-#
-Get-ChildItem $(Convert-Path Scripts:CoreModulesAuto) | Where-Object {$_.PsIsContainer} | %{ 
-  Import-Module $($_.FullName) -Force | out-null
-}
 
 #
 # Update Path to make life easier.
@@ -364,6 +337,7 @@ function Global:prompt {
 
 Show-SystemInfo
 
+# Load the local profile. 
 if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }

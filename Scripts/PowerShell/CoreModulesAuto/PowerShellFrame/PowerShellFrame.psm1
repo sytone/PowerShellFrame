@@ -366,3 +366,45 @@ function Restart-Host {
 
  
 
+function Add-DirectoryToPath($Directory) {
+    $env_Path = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if (($env_Path -split ';') -notcontains "$Directory") {
+    if ($env_Path) {
+        $env_Path = $env_Path + ';'
+    }
+    $env_Path += "$Directory"
+    [System.Environment]::SetEnvironmentVariable("Path", $env_Path, "User")
+    $env:Path = $env_Path 
+    }
+}
+
+function Set-PsfConfig($Key,$Value) {
+    if($Global:PsfConfiguration.$key -eq $null) {
+        $Global:PsfConfiguration | Add-Member $key $value
+    } else {
+        $Global:PsfConfiguration.$key = $value
+    }
+    $Global:PsfConfiguration | Export-Clixml Psf:\config.xml
+}
+
+function Get-PsfConfig($Key=$null) {
+    if($key -eq $null) {
+        $Global:PsfConfiguration
+    } else {
+        $Global:PsfConfiguration.$key
+    }
+}
+
+function Remove-PsfConfig($Key) {
+     $Global:PsfConfiguration.PSObject.Properties.Remove($key)
+     $Global:PsfConfiguration | Export-Clixml Psf:\config.xml
+}
+
+
+
+function Set-LocationWithPathCheck($Path) {
+  if(-not (Test-Path $Path)) {
+    New-Item -Path $Path -ItemType Directory
+  }
+  Set-Location $Path
+}
