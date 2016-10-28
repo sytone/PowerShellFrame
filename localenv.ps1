@@ -6,89 +6,6 @@ cd $env:USERPROFILE
 
 # Internal functions that are used all over the place and not in a module. 
 
-<#
-.SYNOPSIS
-Runs a process elevated. 
-
-.DESCRIPTION
-Uses the diagnostics process start to start a new process as elevated for the user. Returns the process 
-to the calling function for tracking.   
-
-.PARAMETER file 
-The first param is the file to execute. 
-
-.PARAMETER args
-args are added as arguments after conversion to a string. 
-
-.EXAMPLE
-Start a new powershell instance that is elevated. 
-Start-ElevatedProcess powershell
-
-.NOTES
-You need to have admin access to actually run the process as elevated. You may get a UAC prompt. 
-#>
-function Start-ElevatedProcess {
-  $file, [string]$arguments = $args;
-  $psi = new-object System.Diagnostics.ProcessStartInfo $file;
-  $psi.Arguments = $arguments;
-  $psi.Verb = "runas";
-  $psi.WorkingDirectory = get-location;
-  [System.Diagnostics.Process]::Start($psi);
-}
-
-function Get-SystemUptime ($computer = "$env:computername") {
-  $lastboot = [System.Management.ManagementDateTimeconverter]::ToDateTime("$((gwmi  Win32_OperatingSystem -computername $computer).LastBootUpTime)")
-  $uptime = (Get-Date) - $lastboot
-  return $uptime
-}
-
-function Restart-Host {
-    [CmdletBinding(SupportsShouldProcess = $true,ConfirmImpact='High')]
- 
-    Param (
-        [switch]$AsAdministrator,
-        [switch]$Force
-    )
-    
-    begin {    
-        Set-StrictMode -Version Latest    
-        $proc = Get-Process -Id $PID
-        Write-Verbose "Restarting $($proc.Name)"    
-    }    
-
-    process {
- 
-        $proc = Get-Process -Id $PID
-        $cmdArgs = [Environment]::GetCommandLineArgs() | Select-Object -Skip 1
-    
-        $params = @{ FilePath = $proc.Path }
-        if ($AsAdministrator) { $params.Verb = 'runas' }
-        if ($cmdArgs) { $params.ArgumentList = $cmdArgs }
-    
-        if ($Force -or $PSCmdlet.ShouldProcess($proc.Name,"Restart the console")) {
-            if ($host.Name -eq 'Windows PowerShell ISE Host' -and $psISE.PowerShellTabs.Files.IsSaved -contains $false) {
-                if ($Force -or $PSCmdlet.ShouldProcess('Unsaved work detected?','Unsaved work detected. Save changes?','Confirm')) {
-                    foreach ($IseTab in $psISE.PowerShellTabs) {
-                        $IseTab.Files | ForEach-Object {
-                            if ($_.IsUntitled -and !$_.IsSaved) {
-                                $_.SaveAs($_.FullPath,[System.Text.Encoding]::UTF8)
-                            } elseif(!$_.IsSaved) {
-                                $_.Save()
-                            }
-                        }
-                    }
-                } else {
-                    foreach ($IseTab in $psISE.PowerShellTabs) {
-                        $unsavedFiles = $IseTab.Files | Where-Object IsSaved -eq $false
-                        $unsavedFiles | ForEach-Object {$IseTab.Files.Remove($_,$true)}
-                    }
-                }
-            }
-            Start-Process @params
-            $proc.CloseMainWindow()
-        }
-    }
-}
 
 
 function Update-PSF {
@@ -180,7 +97,12 @@ function Show-SystemInfo {
   
   Write-Host "Location:`t`t" -ForegroundColor $Color_Label -nonewline
   Write-Host (Get-Location) -ForegroundColor $Color_Label
-  
+
+  if((Test-Path OneDrive:)) {
+    Write-Host "OneDrive:`t`t" -ForegroundColor $Color_Label -nonewline
+    Write-Host (Get-PSDrive -Name OneDrive).Root -ForegroundColor $Color_Label
+  }
+
 }
 
 function Add-DirectoryToPath($Directory) {
@@ -387,6 +309,19 @@ switch ( $Host.Name ) {
       $pswindow.WindowTitle = "$($global:WindowTitlePrefix) [Local Environment]"
     }
 }
+
+#
+# Add variable for onedrive from registry if installed and mapping drive.  
+#
+Write-host "Getting OneDrive path... " -NoNewline
+$onedrive = (Get-ItemProperty -Path "hkcu:\Software\Microsoft\OneDrive\" -Name UserFolder).UserFolder
+if($onedrive) {
+  if (-not (Test-Path OneDrive:)) {
+    New-PSDrive -name OneDrive -psprovider FileSystem -root $OneDrive -Description "OneDrive Folder" -Scope Global | Out-Null
+  }
+}
+
+
 
 
 #
