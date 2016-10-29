@@ -381,7 +381,7 @@ function Backup-Customizations() {
   $syncRoot = "OneDrive:\PSFSync"
 
   if(-not (Test-Path $syncRoot)) {
-    New-Item -Path $$syncRoot -ItemType Directory | Out-Null 
+    New-Item -Path $syncRoot -ItemType Directory | Out-Null 
   }
 
   # Backup CMDER XML.
