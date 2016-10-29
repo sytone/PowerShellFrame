@@ -374,11 +374,11 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
 function Backup-Customizations() {
   # This will backup all the customizations for the PSF world to make it easy to restore. 
   # Depends on OneDrive and OneDrive Syncronization. 
+  $syncRoot = "OneDrive:\PSFSync\"
+
   if(-not (Test-Path OneDrive:\)) {
     return
   }
-
-  $syncRoot = "OneDrive:\PSFSync"
 
   if(-not (Test-Path $syncRoot)) {
     New-Item -Path $syncRoot -ItemType Directory | Out-Null 
@@ -392,11 +392,13 @@ function Backup-Customizations() {
 }
 
 function Restore-Customizations() {
-  if(-not (Test-Path "OneDrive:\PSFSync")) {
+  $syncRoot = "OneDrive:\PSFSyn"  
+
+  if(-not (Test-Path $syncRoot)) {
     return
   }
 
-  $syncRoot = "OneDrive:\PSFSync"  
+
 
   $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
   Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
