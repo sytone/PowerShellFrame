@@ -218,14 +218,6 @@ function Set-LocationTools {
   Set-LocationWithPathCheck (Get-PsfConfig -Key ToolsPath)
 }
 
-function Update-PsfGit($m = "Lazy hack and commit") {
-    Push-Location (Join-Path (Get-PsfConfig -Key DevelopmentFolder) "PowerShellFrame")
-    git add .
-    git commit -m $m
-    git push
-    Pop-Location
-}
-
 set-alias cdev Set-LocationDevelopment
 set-alias ctools Set-LocationTools;
 set-alias sudo Start-ElevatedProcess;
@@ -343,6 +335,9 @@ if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
     Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
     $githubToken = Read-Host -Prompt "Paste the token from github in here."
     Set-PsfConfig -Key 'GITHUB_TOKEN' -Value $githubToken
+  } else {
+    Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'disabled'
+    Set-PsfConfig -Key 'GITHUB_TOKEN' -Value 'disabled'
   }
 }
 
@@ -355,12 +350,13 @@ if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
 
 #Install cmder?
 #https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip
-if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown') {
+if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'CMDER_ENABLED') -eq $null) {
   $enableCmder = [bool](Read-Choice "Do you want to enable the cmder - http://cmder.net/ ?" "&No","&Yes" -Default 1)
   if($enableCmder) {
+    Write-Host "Installing CMDER to tools. Please wait..."
     Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
     $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
-    if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory}
+    if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory | Out-Null }
     Invoke-WebRequest -Uri 'https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip' -OutFile (Join-Path $path 'cmder_mini.zip')
     Expand-Archive -Path (Join-Path $path 'cmder_mini.zip') -DestinationPath $path
     $TargetFile = (Join-Path $path 'cmder.exe')
