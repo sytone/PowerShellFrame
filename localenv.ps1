@@ -362,7 +362,46 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
     $TargetFile = (Join-Path $path 'cmder.exe')
     $ShortcutFile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder.cmd"
     "@ECHO OFF`n$TargetFile" | Out-File -FilePath $ShortcutFile -Force -Encoding ascii
+    # Update the profile so PSF loads in CMDER
+    $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\config\user-profile.ps1"
+    $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
+    $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
+    New-Item $cmderProfile -type file -force -ea 0 | Out-Null
+    $envLoadLine | Set-Content  ($cmderProfile)
   }
+}
+
+function Backup-Customizations() {
+  # This will backup all the customizations for the PSF world to make it easy to restore. 
+  # Depends on OneDrive and OneDrive Syncronization. 
+  if(-not (Test-Path OneDrive:\)) {
+    return
+  }
+
+  $syncRoot = "OneDrive:\PSFSync"
+
+  if(-not (Test-Path $syncRoot)) {
+    New-Item -Path $$syncRoot -ItemType Directory | Out-Null 
+  }
+
+  # Backup CMDER XML.
+  $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
+  Copy-Item -Path $cmderProfile -Destination $syncRoot -Force
+
+  Copy-Item -Path .\localprofile.ps1 -Destination $syncRoot -Force
+}
+
+function Restore-Customizations() {
+  if(-not (Test-Path "OneDrive:\PSFSync")) {
+    return
+  }
+
+  $syncRoot = "OneDrive:\PSFSync"  
+
+  $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
+  Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
+
+  Copy-Item -Path $syncRoot -Destination .\localprofile.ps1 -Force
 }
 
 # Friendly Tips!
