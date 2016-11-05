@@ -382,6 +382,7 @@ function Backup-Customizations() {
   # This will backup all the customizations for the PSF world to make it easy to restore. 
   # Depends on OneDrive and OneDrive Syncronization. 
   $syncRoot = "OneDrive:\PSFSync\"
+  pushd $env:USERPROFILE
 
   if(-not (Test-Path OneDrive:\)) {
     return
@@ -401,7 +402,7 @@ function Backup-Customizations() {
   Copy-Item -Path Scripts:\CoreModulesAuto -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
   Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\AutoHotkey") -Recurse -Force
   Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\PowerShellFrame") -Recurse -Force
-  
+  popd
 }
 
 function Restore-Customizations() {
@@ -410,7 +411,7 @@ function Restore-Customizations() {
   if(-not (Test-Path $syncRoot)) {
     return
   }
-
+  pushd $env:USERPROFILE
 
 
   $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
@@ -419,6 +420,7 @@ function Restore-Customizations() {
   Copy-Item -Path $syncRoot -Destination .\localprofile.ps1 -Force
 
   Copy-Item -Path (Join-Path $syncRoot "CoreFunctions") -Destination Scripts:\CoreFunctions -Recurse -Force
+  popd
 }
 
 # Friendly Tips!
