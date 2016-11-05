@@ -398,10 +398,11 @@ function Backup-Customizations() {
   Copy-Item -Path $cmderProfile -Destination $syncRoot -Force
 
   Copy-Item -Path .\localprofile.ps1 -Destination $syncRoot -Force
+
   $x = (get-item Scripts:\CoreModulesAuto)
-  ROBOCOPY /MIR "$($x.FullName)" "$(Join-Path $syncRoot 'CoreModulesAuto')"
+  ROBOCOPY /E "$($x.FullName)" "$(Join-Path $syncRoot 'CoreModulesAuto')" 
   $x = (get-item Scripts:\CoreFunctions)
-  ROBOCOPY /MIR "$($x.FullName)" "$(Join-Path $syncRoot 'CoreFunctions')"
+  ROBOCOPY /E "$($x.FullName)" "$(Join-Path $syncRoot 'CoreFunctions')" 
   #Copy-Item -Path Scripts:\CoreFunctions\*.* -Destination (Join-Path $syncRoot "CoreFunctions") -Recurse -Force
   #Copy-Item -Path Scripts:\CoreModulesAuto\*.* -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
   Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\AutoHotkey") -Recurse -Force | Out-Null
@@ -424,7 +425,10 @@ function Restore-Customizations() {
 
   Copy-Item -Path $syncRoot -Destination .\localprofile.ps1 -Force
 
-  Copy-Item -Path (Join-Path $syncRoot "CoreFunctions") -Destination Scripts:\CoreFunctions -Recurse -Force
+  $x = (get-item Scripts:\CoreModulesAuto)
+  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreModulesAuto')" "$($x.FullName)"
+  $x = (get-item Scripts:\CoreFunctions)
+  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreFunctions')" "$($x.FullName)" 
   popd
 }
 
