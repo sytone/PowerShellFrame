@@ -423,7 +423,7 @@ function Restore-Customizations() {
   $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
   Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
 
-  Copy-Item -Path $syncRoot -Destination .\localprofile.ps1 -Force
+  Copy-Item -Path (Join-Path $syncRoot 'localprofile.ps1') -Destination .\localprofile.ps1 -Force
 
   $x = (get-item Scripts:\CoreModulesAuto)
   ROBOCOPY /E "$(Join-Path $syncRoot 'CoreModulesAuto')" "$($x.FullName)"
