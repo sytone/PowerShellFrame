@@ -397,9 +397,12 @@ function Backup-Customizations() {
   Copy-Item -Path $cmderProfile -Destination $syncRoot -Force
 
   Copy-Item -Path .\localprofile.ps1 -Destination $syncRoot -Force
-
-  Copy-Item -Path Scripts:\CoreFunctions\*.* -Destination (Join-Path $syncRoot "CoreFunctions") -Recurse -Force
-  Copy-Item -Path Scripts:\CoreModulesAuto\*.* -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
+  $x = (get-item Scripts:\CoreModulesAuto)
+  ROBOCOPY /MIR "$($x.FullName)" "$(Join-Path $syncRoot 'CoreModulesAuto')"
+  $x = (get-item Scripts:\CoreFunctions)
+  ROBOCOPY /MIR "$($x.FullName)" "$(Join-Path $syncRoot 'CoreFunctions')"
+  #Copy-Item -Path Scripts:\CoreFunctions\*.* -Destination (Join-Path $syncRoot "CoreFunctions") -Recurse -Force
+  #Copy-Item -Path Scripts:\CoreModulesAuto\*.* -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
   Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\AutoHotkey") -Recurse -Force | Out-Null
   Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\PowerShellFrame") -Recurse -Force | Out-Null
   popd
