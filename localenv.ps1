@@ -381,7 +381,8 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
 function Backup-Customizations() {
   # This will backup all the customizations for the PSF world to make it easy to restore. 
   # Depends on OneDrive and OneDrive Syncronization. 
-  $syncRoot = "OneDrive:\PSFSync\"
+  $x = (get-item OneDrive:\PSFSync)
+  $syncRoot = "$($x.FullName)"
   pushd $env:USERPROFILE
 
   if(-not (Test-Path OneDrive:\)) {
@@ -409,7 +410,8 @@ function Backup-Customizations() {
 }
 
 function Restore-Customizations() {
-  $syncRoot = "OneDrive:\PSFSyn"  
+  $x = (get-item OneDrive:\PSFSync)
+  $syncRoot = "$($x.FullName)"
 
   if(-not (Test-Path $syncRoot)) {
     return
