@@ -309,6 +309,7 @@ Get-ChildItem Scripts:CoreFunctions* | ? { $_.PsIsContainer } | % {Add-Directory
 
 # Setup the prompt
 function Global:prompt {
+  $realLASTEXITCODE = $LASTEXITCODE
   # The at sign creates an array in case only one history item exists.
   $history = @(get-history)
   if($history.Count -gt 0) {
@@ -317,7 +318,13 @@ function Global:prompt {
   }
   $nextCommand = $lastId + 1
   Write-Host "PS: $nextCommand $($executionContext.SessionState.Path.CurrentLocation)" -ForegroundColor Gray
+  if(Get-Module -Name posh-git) {
+    Write-VcsStatus
+  }
   "$('#' * ($nestedPromptLevel + 1)) "
+
+
+  $global:LASTEXITCODE = $realLASTEXITCODE  
 }
 
 Show-SystemInfo
@@ -389,6 +396,12 @@ function Backup-Customizations() {
   Copy-Item -Path $cmderProfile -Destination $syncRoot -Force
 
   Copy-Item -Path .\localprofile.ps1 -Destination $syncRoot -Force
+
+  Copy-Item -Path Scripts:\CoreFunctions -Destination (Join-Path $syncRoot "CoreFunctions") -Recurse -Force
+  Copy-Item -Path Scripts:\CoreModulesAuto -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
+  Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\AutoHotkey") -Recurse -Force
+  Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\PowerShellFrame") -Recurse -Force
+  
 }
 
 function Restore-Customizations() {
@@ -404,6 +417,8 @@ function Restore-Customizations() {
   Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
 
   Copy-Item -Path $syncRoot -Destination .\localprofile.ps1 -Force
+
+  Copy-Item -Path (Join-Path $syncRoot "CoreFunctions") -Destination Scripts:\CoreFunctions -Recurse -Force
 }
 
 # Friendly Tips!
