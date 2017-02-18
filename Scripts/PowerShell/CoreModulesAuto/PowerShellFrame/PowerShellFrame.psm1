@@ -172,7 +172,7 @@ function alias {
     # pull together all the args and then split on =
     $alias,$cmd = [string]::join(" ",$args).split("=",2) | % { $_.trim()}
     $cmd = Resolve-Aliases $cmd
-    if(Get-Item "function:\Alias$Alias" -ErrorAction $SilentlyContinue) { 
+    if(Get-Item "function:\Alias$Alias" -ErrorAction SilentlyContinue) { 
         Write-Host "Alias exists, please remove first."
         return
     }
