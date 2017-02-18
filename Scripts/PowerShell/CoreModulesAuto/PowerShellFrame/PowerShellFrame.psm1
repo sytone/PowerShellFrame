@@ -173,7 +173,7 @@ function alias {
     $alias,$cmd = [string]::join(" ",$args).split("=",2) | % { $_.trim()}
     $cmd = Resolve-Aliases $cmd
     if((Get-Item "function:\Alias$Alias" -ErrorAction SilentlyContinue)) { 
-        Write-Host "Alias ($Alias) exists, please remove first."
+        Write-Host "Alias ($alias) exists, please remove first."
         return
     }
     $f = New-Item -Path function: -Name "Global:Alias$Alias" -Options "AllScope" -Value @"
