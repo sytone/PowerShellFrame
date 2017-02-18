@@ -24,9 +24,10 @@ function Get-FileFromWeb($url,$outfile) {
   #Move-Item -Path $tmpfile -Destination $outfile -Force
 }
 
-
-Write-Host "Welcome to the PowerShelFrame (PSF) "
-Write-Host "This is being installed at: $psfLocalRoot"
+Write-Host "-------------------------------------------------------------------------------"
+Write-Host "    Welcome to the PowerShelFrame (PSF) "
+Write-Host ""
+Write-Host " - This is being installed at: $psfLocalRoot"
 
 if(-not (Test-Path $psfLocalRoot)) {
   Write-Host "- Creating PSF"
@@ -44,10 +45,11 @@ if(-not (Test-Path $psfLocalRoot)) {
   Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 }
 
-Write-Host "- Checking Scripts"
+
 # 
 # Test the Scripts directories are in place.  
 #
+Write-Host "- Checking Scripts"
 $ScriptsRoot = (Join-Path $env:USERPROFILE "Scripts")  
 if(-not (Test-Path $ScriptsRoot)) {
     New-Item $ScriptsRoot -ItemType Directory | Out-Null
@@ -106,11 +108,12 @@ if ((Test-Path $profile) -eq $false) {
 }
 
 # Install any packages. 
-$githubfs = Get-Module -Name GithubFS -ListAvailable
-if(!$githubfs) {
-  find-package -Name GithubFS | Install-Package -Force -Scope CurrentUser
-}
+#$githubfs = Get-Module -Name GithubFS -ListAvailable
+#if(!$githubfs) {
+#  find-package -Name GithubFS | Install-Package -Force -Scope CurrentUser
+#}
 
+Write-Host "-------------------------------------------------------------------------------"
 
 
 

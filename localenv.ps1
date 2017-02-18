@@ -329,7 +329,7 @@ function Global:prompt {
 
 Show-SystemInfo
 
-# Load the local profile. 
+# Load the local profile. If found then load it. 
 if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }
@@ -415,20 +415,23 @@ function Restore-Customizations() {
   $syncRoot = "$($x.FullName)"
 
   if(-not (Test-Path $syncRoot)) {
+    Write-Host "Unable to find backup in OneDrive." -ForegroundColor Red
     return
   }
   pushd $env:USERPROFILE
 
 
   $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
+  Write-Host "Restoring ConEmu.xml..."
   Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
 
+  Write-Host "Restoring local profile..."
   Copy-Item -Path (Join-Path $syncRoot 'localprofile.ps1') -Destination .\localprofile.ps1 -Force
 
   $x = (get-item Scripts:\CoreModulesAuto)
-  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreModulesAuto')" "$($x.FullName)"
+  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreModulesAuto')" "$($x.FullName)" | Out-Null
   $x = (get-item Scripts:\CoreFunctions)
-  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreFunctions')" "$($x.FullName)" 
+  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreFunctions')" "$($x.FullName)" | Out-Null
   popd
 }
 
