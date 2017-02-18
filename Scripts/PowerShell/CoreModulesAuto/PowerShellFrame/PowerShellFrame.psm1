@@ -172,7 +172,10 @@ function alias {
     # pull together all the args and then split on =
     $alias,$cmd = [string]::join(" ",$args).split("=",2) | % { $_.trim()}
     $cmd = Resolve-Aliases $cmd
-    
+    if(Get-Item "function:\Alias$Alias") { 
+        Write-Host "Alias exists, please remove first."
+        return
+    }
     $f = New-Item -Path function: -Name "Global:Alias$Alias" -Options "AllScope" -Value @"
 Invoke-Expression '$cmd `@args '
     ###ALIAS###
