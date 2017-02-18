@@ -428,3 +428,70 @@ function Initialize-PsfGit() {
   if(!(Test-Path $cloneRoot)) {New-Item -Path $cloneRoot -ItemType Directory | Out-Null }
   git clone "https://github.com/sytone/PowerShellFrame.git" $cloneRoot
 }
+
+
+function Backup-Customizations() {
+  # This will backup all the customizations for the PSF world to make it easy to restore. 
+  # Depends on OneDrive and OneDrive Syncronization. 
+  $x = (get-item OneDrive:\PSFSync)
+  $syncRoot = "$($x.FullName)"
+  pushd $env:USERPROFILE
+
+  if(-not (Test-Path OneDrive:\)) {
+    Write-Host "Unable to backup in OneDrive. Not mapped or setup." -ForegroundColor Red
+    return
+  }
+
+  if(-not (Test-Path $syncRoot)) {
+    New-Item -Path $syncRoot -ItemType Directory | Out-Null 
+  }
+
+  # Backup CMDER XML.
+  Write-Host "Backing up ConEmu.xml..."
+  $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
+  Copy-Item -Path $cmderProfile -Destination $syncRoot -Force
+
+  Write-Host "Backing up local profile... (Not localprofile.$($env:COMPUTERNAME).ps1)"
+  Copy-Item -Path .\localprofile.ps1 -Destination $syncRoot -Force
+
+  Write-Host "Backing up Code Modules Auto"
+  $x = (get-item Scripts:\CoreModulesAuto)
+  ROBOCOPY /E "$($x.FullName)" "$(Join-Path $syncRoot 'CoreModulesAuto')" | Out-Null
+  
+  Write-Host "Backing up Core Functions"
+  $x = (get-item Scripts:\CoreFunctions)
+  ROBOCOPY /E "$($x.FullName)" "$(Join-Path $syncRoot 'CoreFunctions')" | Out-Null
+  #Copy-Item -Path Scripts:\CoreFunctions\*.* -Destination (Join-Path $syncRoot "CoreFunctions") -Recurse -Force
+  #Copy-Item -Path Scripts:\CoreModulesAuto\*.* -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
+  Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\AutoHotkey") -Recurse -Force | Out-Null
+  Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\PowerShellFrame") -Recurse -Force | Out-Null
+  popd
+}
+
+function Restore-Customizations() {
+  $x = (get-item OneDrive:\PSFSync)
+  $syncRoot = "$($x.FullName)"
+
+  if(-not (Test-Path $syncRoot)) {
+    Write-Host "Unable to find backup in OneDrive." -ForegroundColor Red
+    return
+  }
+  pushd $env:USERPROFILE
+
+
+  $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
+  Write-Host "Restoring ConEmu.xml..."
+  Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
+
+  Write-Host "Restoring local profile..."
+  Copy-Item -Path (Join-Path $syncRoot 'localprofile.ps1') -Destination .\localprofile.ps1 -Force
+
+  $x = (get-item Scripts:\CoreModulesAuto)
+  Write-Host "Restoring Core Modules Auto..."
+  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreModulesAuto')" "$($x.FullName)" | Out-Null
+  
+  $x = (get-item Scripts:\CoreFunctions)
+  Write-Host "Restoring Core Functions..."
+  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreFunctions')" "$($x.FullName)" | Out-Null
+  popd
+}

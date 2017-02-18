@@ -334,6 +334,12 @@ if((Test-Path ".\localprofile.ps1")) {
     . .\localprofile.ps1
 }
 
+# Load machine specific profie. this is not backed up using One Drive. 
+if((Test-Path ".\localprofile.$($env:COMPUTERNAME).ps1")) {
+    . ".\localprofile.$($env:COMPUTERNAME).ps1"
+}
+
+
 #Github Setup
 if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
   $enablegithubprovider = [bool](Read-Choice "Do you want to enable the github file system access in powershell?" "&No","&Yes" -Default 1)
@@ -378,62 +384,6 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
   }
 }
 
-function Backup-Customizations() {
-  # This will backup all the customizations for the PSF world to make it easy to restore. 
-  # Depends on OneDrive and OneDrive Syncronization. 
-  $x = (get-item OneDrive:\PSFSync)
-  $syncRoot = "$($x.FullName)"
-  pushd $env:USERPROFILE
-
-  if(-not (Test-Path OneDrive:\)) {
-    return
-  }
-
-  if(-not (Test-Path $syncRoot)) {
-    New-Item -Path $syncRoot -ItemType Directory | Out-Null 
-  }
-
-  # Backup CMDER XML.
-  $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
-  Copy-Item -Path $cmderProfile -Destination $syncRoot -Force
-
-  Copy-Item -Path .\localprofile.ps1 -Destination $syncRoot -Force
-
-  $x = (get-item Scripts:\CoreModulesAuto)
-  ROBOCOPY /E "$($x.FullName)" "$(Join-Path $syncRoot 'CoreModulesAuto')" 
-  $x = (get-item Scripts:\CoreFunctions)
-  ROBOCOPY /E "$($x.FullName)" "$(Join-Path $syncRoot 'CoreFunctions')" 
-  #Copy-Item -Path Scripts:\CoreFunctions\*.* -Destination (Join-Path $syncRoot "CoreFunctions") -Recurse -Force
-  #Copy-Item -Path Scripts:\CoreModulesAuto\*.* -Destination (Join-Path $syncRoot "CoreModulesAuto") -Recurse -Force
-  Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\AutoHotkey") -Recurse -Force | Out-Null
-  Remove-Item -Path (Join-Path $syncRoot "CoreModulesAuto\PowerShellFrame") -Recurse -Force | Out-Null
-  popd
-}
-
-function Restore-Customizations() {
-  $x = (get-item OneDrive:\PSFSync)
-  $syncRoot = "$($x.FullName)"
-
-  if(-not (Test-Path $syncRoot)) {
-    Write-Host "Unable to find backup in OneDrive." -ForegroundColor Red
-    return
-  }
-  pushd $env:USERPROFILE
-
-
-  $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\vendor\conemu-maximus5\ConEmu.xml"
-  Write-Host "Restoring ConEmu.xml..."
-  Copy-Item -Path (Join-Path $syncRoot "ConEmu.xml") -Destination $cmderProfile -Force  
-
-  Write-Host "Restoring local profile..."
-  Copy-Item -Path (Join-Path $syncRoot 'localprofile.ps1') -Destination .\localprofile.ps1 -Force
-
-  $x = (get-item Scripts:\CoreModulesAuto)
-  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreModulesAuto')" "$($x.FullName)" | Out-Null
-  $x = (get-item Scripts:\CoreFunctions)
-  ROBOCOPY /E "$(Join-Path $syncRoot 'CoreFunctions')" "$($x.FullName)" | Out-Null
-  popd
-}
 
 # Friendly Tips!
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
