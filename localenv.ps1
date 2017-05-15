@@ -2,7 +2,7 @@
 # modules in the system.
 
 # Move to the user profile for all actions. 
-cd $env:USERPROFILE
+push-location $env:USERPROFILE
 
 # Setup drive paths so we can pull modules in ASAP. 
 if (-not (Test-Path Scripts:)) {
@@ -389,3 +389,7 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
 Write-Host " $tip `n`n"
+
+if($env:psfretainpath -eq 'true') {
+  Pop-Location
+}
