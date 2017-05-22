@@ -166,8 +166,7 @@ function script:Resolve-Aliases {
     [System.Management.Automation.PSParser]::Tokenize($line,[ref]$null) | ForEach-Object {
         $type = $_.Type
         $content = $_.Content
-        switch ($type) 
-        { 
+        switch ($type) { 
             "Command" {            
                 $cmd = @(Get-Command $content)[0]
                 if($cmd.CommandType -eq "Alias") {
