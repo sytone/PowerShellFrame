@@ -167,7 +167,7 @@ function script:Resolve-Aliases {
         $type = $_.Type
         $content = $_.Content
         switch ($type) { 
-            "Command" {            
+            "Command" {            
                 $cmd = @(Get-Command $content)[0]
                 if($cmd.CommandType -eq "Alias") {
                     $newCommandLine += $cmd.Definition
@@ -176,12 +176,12 @@ function script:Resolve-Aliases {
                     $newCommandLine += $content
                 }
             } 
-            "CommandParameter" {$newCommandLine += $content} 
-            "CommandArgument" {$newCommandLine += $content} 
-            "StatementSeparator" {$newCommandLine += $content} 
-            "String" {$newCommandLine += "`"" + $content + "`""} 
-            default {$newCommandLine += $content}
-        }        
+            "CommandParameter" {$newCommandLine += $content} 
+            "CommandArgument" {$newCommandLine += $content} 
+            "StatementSeparator" {$newCommandLine += $content} 
+            "String" {$newCommandLine += "`"" + $content + "`""} 
+            default {$newCommandLine += $content}
+        }        
         $newCommandLine += " "
     }
     $newCommandLine
