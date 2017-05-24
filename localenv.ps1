@@ -362,16 +362,22 @@ if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
 }
 
 #Install cmder?
-#https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip
 if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'CMDER_ENABLED') -eq $null) {
+  $miniInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder_mini.zip'
+  $fullInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder.zip'
   $enableCmder = [bool](Read-Choice "Do you want to enable the cmder - http://cmder.net/ ?" "&No","&Yes" -Default 1)
   if($enableCmder) {
+    $installFull = [bool](Read-Choice "Do you want to install the Full or Mini version?" "&Mini","&Full" -Default 1)
     Write-Host "Installing CMDER to tools. Please wait..."
     Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
     $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
     if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory | Out-Null }
-    Invoke-WebRequest -Uri 'https://github.com/cmderdev/cmder/releases/download/v1.3.0/cmder_mini.zip' -OutFile (Join-Path $path 'cmder_mini.zip')
-    Expand-Archive -Path (Join-Path $path 'cmder_mini.zip') -DestinationPath $path
+    if($installFull) {
+      Invoke-WebRequest -Uri $miniInstallSource -OutFile (Join-Path $path 'cmder.zip')
+    } else {
+      Invoke-WebRequest -Uri $miniInstallSource -OutFile (Join-Path $path 'cmder.zip')
+    }
+    Expand-Archive -Path (Join-Path $path 'cmder.zip') -DestinationPath $path
     $TargetFile = (Join-Path $path 'cmder.exe')
     $ShortcutFile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder.cmd"
     "@ECHO OFF`n$TargetFile" | Out-File -FilePath $ShortcutFile -Force -Encoding ascii
@@ -381,9 +387,16 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
     $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
     New-Item $cmderProfile -type file -force -ea 0 | Out-Null
     $envLoadLine | Set-Content  ($cmderProfile)
+  } else {
+    Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'disabled'
   }
 }
 
+#TODO
+# Visual Studio Code check and Install
+#  choco install VisualStudioCode -y
+# GIT check and install 
+#  choco install git -y
 
 # Friendly Tips!
 $tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
