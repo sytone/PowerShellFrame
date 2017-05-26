@@ -445,6 +445,9 @@ function Set-LocationWithPathCheck($Path) {
   Set-Location $Path
 }
 
+###
+# PSF Coding Helpers. 
+###
 function Update-PsfGit($m = "Lazy hack and commit") {
     Push-Location (Join-Path (Get-PsfConfig -Key DevelopmentFolder) "PowerShellFrame")
     git add .
@@ -463,6 +466,20 @@ function Initialize-PsfGit() {
   $cloneRoot = (Join-Path (Get-PsfConfig -Key DevelopmentFolder) "PowerShellFrame")
   if(!(Test-Path $cloneRoot)) {New-Item -Path $cloneRoot -ItemType Directory | Out-Null }
   git clone "https://github.com/sytone/PowerShellFrame.git" $cloneRoot
+}
+
+function Test-PsfChanges () {
+    $cloneRoot = (Join-Path (Get-PsfConfig -Key DevelopmentFolder) "PowerShellFrame")
+    
+    $ScriptsRoot = (Join-Path $env:USERPROFILE "Scripts")  
+    $PowerShellScriptsRoot = (Join-Path $ScriptsRoot "PowerShell")  
+    Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -force | Out-Null
+    Copy-Item (Join-Path $cloneRoot "Scripts\PowerShell\CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1")  (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -Force
+
+    $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
+    Remove-Item "$psfLocalRoot\localenv.ps1" -Force | Out-Null
+    Copy-Item (Join-Path $cloneRoot "localenv.ps1")  "$psfLocalRoot\localenv.ps1" -Force
+    
 }
 
 
@@ -530,4 +547,385 @@ function Restore-Customizations() {
   Write-Host "Restoring Core Functions..."
   ROBOCOPY /E "$(Join-Path $syncRoot 'CoreFunctions')" "$($x.FullName)" | Out-Null
   popd
+}
+
+###
+# UI Helpers
+# From: http://blog.danskingdom.com/powershell-multi-line-input-box-dialog-open-file-dialog-folder-browser-dialog-input-box-and-message-box/
+###
+
+<#
+.SYNOPSIS
+    Show message box popup and return the button clicked by the user.
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    $buttonClicked = Read-MessageBoxDialog -Message "Please press the OK button." -WindowTitle "Message Box Example" -Buttons OKCancel -Icon Exclamation
+    if ($buttonClicked -eq "OK") { Write-Host "Thanks for pressing OK" }
+    else { Write-Host "You clicked $buttonClicked" }
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    Output (if any)
+.NOTES
+    General notes
+#>
+function Read-MessageBoxDialog() {
+    param(
+        [string]$Message, 
+        [string]$WindowTitle, 
+        [System.Windows.Forms.MessageBoxButtons]$Buttons = [System.Windows.Forms.MessageBoxButtons]::OK, 
+        [System.Windows.Forms.MessageBoxIcon]$Icon = [System.Windows.Forms.MessageBoxIcon]::None
+    )
+    Add-Type -AssemblyName System.Windows.Forms
+    return [System.Windows.Forms.MessageBox]::Show($Message, $WindowTitle, $Buttons, $Icon)
+}
+
+<#
+.SYNOPSIS
+    Show input box popup and return the value entered by the user.
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    $textEntered = Read-InputBoxDialog -Message "Please enter the word 'Banana'" -WindowTitle "Input Box Example" -DefaultText "Apple"
+    if ($textEntered -eq $null) { Write-Host "You clicked Cancel" }
+    elseif ($textEntered -eq "Banana") { Write-Host "Thanks for typing Banana" }
+    else { Write-Host "You entered $textEntered" }
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    Output (if any)
+.NOTES
+    General notes
+#>
+function Read-InputBoxDialog() {
+    param(
+        [string]$Message, 
+        [string]$WindowTitle, 
+        [string]$DefaultText
+    )
+    Add-Type -AssemblyName Microsoft.VisualBasic
+    return [Microsoft.VisualBasic.Interaction]::InputBox($Message, $WindowTitle, $DefaultText)
+}
+
+<#
+.SYNOPSIS
+    Show an Open File Dialog and return the file selected by the user.
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    $filePath = Read-OpenFileDialog -WindowTitle "Select Text File Example" -InitialDirectory 'C:\' -Filter "Text files (*.txt)|*.txt"
+    if (![string]::IsNullOrEmpty($filePath)) { Write-Host "You selected the file: $filePath" }
+    else { "You did not select a file." }
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    Output (if any)
+.NOTES
+    General notes
+#>
+function Read-OpenFileDialog() {  
+    param(
+        [string]$WindowTitle, 
+        [string]$InitialDirectory, 
+        [string]$Filter = "All files (*.*)|*.*", 
+        [switch]$AllowMultiSelect
+    )
+    Add-Type -AssemblyName System.Windows.Forms
+    $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+    $openFileDialog.Title = $WindowTitle
+    if (![string]::IsNullOrWhiteSpace($InitialDirectory)) { $openFileDialog.InitialDirectory = $InitialDirectory }
+    $openFileDialog.Filter = $Filter
+    if ($AllowMultiSelect) { $openFileDialog.MultiSelect = $true }
+    $openFileDialog.ShowHelp = $true    # Without this line the ShowDialog() function may hang depending on system configuration and running from console vs. ISE.
+    $openFileDialog.ShowDialog() > $null
+    if ($AllowMultiSelect) { return $openFileDialog.Filenames } else { return $openFileDialog.Filename }
+}
+
+
+<#
+.SYNOPSIS
+    Show an Open Folder Dialog and return the directory selected by the user.
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    $directoryPath = Read-FolderBrowserDialog -Message "Please select a directory" -InitialDirectory 'C:\' -NoNewFolderButton
+    if (![string]::IsNullOrEmpty($directoryPath)) { Write-Host "You selected the directory: $directoryPath" }
+    else { "You did not select a directory." }
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    Output (if any)
+.NOTES
+    General notes
+#>
+function Read-FolderBrowserDialog() {
+    param(
+        [string]$Message, 
+        [string]$InitialDirectory, 
+        [switch]$NoNewFolderButton
+    )
+    $browseForFolderOptions = 0
+    if ($NoNewFolderButton) { $browseForFolderOptions += 512 }
+ 
+    $app = New-Object -ComObject Shell.Application
+    $folder = $app.BrowseForFolder(0, $Message, $browseForFolderOptions, $InitialDirectory)
+    if ($folder) { $selectedDirectory = $folder.Self.Path } else { $selectedDirectory = '' }
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($app) > $null
+    return $selectedDirectory
+}
+
+<#
+    .SYNOPSIS
+    Prompts the user with a multi-line input box and returns the text they enter, or null if they cancelled the prompt.
+     
+    .DESCRIPTION
+    Prompts the user with a multi-line input box and returns the text they enter, or null if they cancelled the prompt.
+     
+    .PARAMETER Message
+    The message to display to the user explaining what text we are asking them to enter.
+     
+    .PARAMETER WindowTitle
+    The text to display on the prompt window's title.
+     
+    .PARAMETER DefaultText
+    The default text to show in the input box.
+     
+    .EXAMPLE
+    $userText = Read-MultiLineInputDialog "Input some text please:" "Get User's Input"
+     
+    Shows how to create a simple prompt to get mutli-line input from a user.
+     
+    .EXAMPLE
+    # Setup the default multi-line address to fill the input box with.
+    $defaultAddress = @'
+    John Doe
+    123 St.
+    Some Town, SK, Canada
+    A1B 2C3
+    '@
+     
+    $address = Read-MultiLineInputDialog "Please enter your full address, including name, street, city, and postal code:" "Get User's Address" $defaultAddress
+    if ($address -eq $null)
+    {
+        Write-Error "You pressed the Cancel button on the multi-line input box."
+    }
+     
+    Prompts the user for their address and stores it in a variable, pre-filling the input box with a default multi-line address.
+    If the user pressed the Cancel button an error is written to the console.
+     
+    .EXAMPLE
+    $inputText = Read-MultiLineInputDialog -Message "If you have a really long message you can break it apart`nover two lines with the powershell newline character:" -WindowTitle "Window Title" -DefaultText "Default text for the input box."
+     
+    Shows how to break the second parameter (Message) up onto two lines using the powershell newline character (`n).
+    If you break the message up into more than two lines the extra lines will be hidden behind or show ontop of the TextBox.
+
+    .EXAMPLE
+    $multiLineText = Read-MultiLineInputBoxDialog -Message "Please enter some text. It can be multiple lines" -WindowTitle "Multi Line Example" -DefaultText "Enter some text here..."
+    if ($multiLineText -eq $null) { Write-Host "You clicked Cancel" } else { Write-Host "You entered the following text: $multiLineText" }    
+     
+    .NOTES
+    Name: Show-MultiLineInputDialog
+    Author: Daniel Schroeder (originally based on the code shown at http://technet.microsoft.com/en-us/library/ff730941.aspx)
+    Version: 1.0
+#>
+function Read-MultiLineInputBoxDialog() {
+    param(
+        [string]$Message, 
+        [string]$WindowTitle, 
+        [string]$DefaultText
+    )
+
+    Add-Type -AssemblyName System.Drawing
+    Add-Type -AssemblyName System.Windows.Forms
+     
+    # Create the Label.
+    $label = New-Object System.Windows.Forms.Label
+    $label.Location = New-Object System.Drawing.Size(10,10) 
+    $label.Size = New-Object System.Drawing.Size(280,20)
+    $label.AutoSize = $true
+    $label.Text = $Message
+     
+    # Create the TextBox used to capture the user's text.
+    $textBox = New-Object System.Windows.Forms.TextBox 
+    $textBox.Location = New-Object System.Drawing.Size(10,40) 
+    $textBox.Size = New-Object System.Drawing.Size(575,200)
+    $textBox.AcceptsReturn = $true
+    $textBox.AcceptsTab = $false
+    $textBox.Multiline = $true
+    $textBox.ScrollBars = 'Both'
+    $textBox.Text = $DefaultText
+     
+    # Create the OK button.
+    $okButton = New-Object System.Windows.Forms.Button
+    $okButton.Location = New-Object System.Drawing.Size(415,250)
+    $okButton.Size = New-Object System.Drawing.Size(75,25)
+    $okButton.Text = "OK"
+    $okButton.Add_Click({ $form.Tag = $textBox.Text; $form.Close() })
+     
+    # Create the Cancel button.
+    $cancelButton = New-Object System.Windows.Forms.Button
+    $cancelButton.Location = New-Object System.Drawing.Size(510,250)
+    $cancelButton.Size = New-Object System.Drawing.Size(75,25)
+    $cancelButton.Text = "Cancel"
+    $cancelButton.Add_Click({ $form.Tag = $null; $form.Close() })
+     
+    # Create the form.
+    $form = New-Object System.Windows.Forms.Form 
+    $form.Text = $WindowTitle
+    $form.Size = New-Object System.Drawing.Size(610,320)
+    $form.FormBorderStyle = 'FixedSingle'
+    $form.StartPosition = "CenterScreen"
+    $form.AutoSizeMode = 'GrowAndShrink'
+    $form.Topmost = $True
+    $form.AcceptButton = $okButton
+    $form.CancelButton = $cancelButton
+    $form.ShowInTaskbar = $true
+     
+    # Add all of the controls to the form.
+    $form.Controls.Add($label)
+    $form.Controls.Add($textBox)
+    $form.Controls.Add($okButton)
+    $form.Controls.Add($cancelButton)
+     
+    # Initialize and show the form.
+    $form.Add_Shown({$form.Activate()})
+    $form.ShowDialog() > $null   # Trash the text of the button that was clicked.
+     
+    # Return the text that the user entered.
+    return $form.Tag
+}
+
+
+###############################################################################
+# Simple Textbased Powershell Menu
+# Author : Michael Albert
+# E-Mail : info@michlstechblog.info
+# License: none, feel free to modify
+# usage:
+# Source the menu.ps1 file in your script:
+# . .\menu.ps1
+# fShowMenu requieres 2 Parameters:
+# Parameter 1: [string]MenuTitle
+# Parameter 2: [hashtable]@{[string]"ReturnString1"=[string]"Menu Entry 1";[string]"ReturnString2"=[string]"Menu Entry 2";[string]"ReturnString3"=[string]"Menu Entry 3"
+# Return     : Select String
+# For example:
+# fShowMenu "Choose your favorite Band" @{"sl"="Slayer";"me"="Metallica";"ex"="Exodus";"an"="Anthrax"}
+# #############################################################################
+
+function Show-NavigationableMenu() {
+    param (
+        [System.String]$sMenuTitle,
+        [System.Collections.Hashtable]$hMenuEntries        
+    )
+	# Orginal Konsolenfarben zwischenspeichern
+	[System.Int16]$iSavedBackgroundColor=[System.Console]::BackgroundColor
+	[System.Int16]$iSavedForegroundColor=[System.Console]::ForegroundColor
+	# Menu Colors
+	# inverse fore- and backgroundcolor 
+	[System.Int16]$iMenuForeGroundColor=$iSavedForegroundColor
+	[System.Int16]$iMenuBackGroundColor=$iSavedBackgroundColor
+	[System.Int16]$iMenuBackGroundColorSelectedLine=$iMenuForeGroundColor
+	[System.Int16]$iMenuForeGroundColorSelectedLine=$iMenuBackGroundColor
+	# Alternative, colors
+	#[System.Int16]$iMenuBackGroundColor=0
+	#[System.Int16]$iMenuForeGroundColor=7
+	#[System.Int16]$iMenuBackGroundColorSelectedLine=10
+	# Init
+	[System.Int16]$iMenuStartLineAbsolute=0
+	[System.Int16]$iMenuLoopCount=0
+	[System.Int16]$iMenuSelectLine=1
+	[System.Int16]$iMenuEntries=$hMenuEntries.Count
+	[Hashtable]$hMenu=@{};
+	[Hashtable]$hMenuHotKeyList=@{};
+	[Hashtable]$hMenuHotKeyListReverse=@{};
+	[System.Int16]$iMenuHotKeyChar=0
+	[System.String]$sValidChars=""
+	[System.Console]::WriteLine(" "+$sMenuTitle)
+	# Für die eindeutige Zuordnung Nummer -> Key
+	$iMenuLoopCount=1
+	# Start Hotkeys mit "1"!
+	$iMenuHotKeyChar=49
+	foreach ($sKey in $hMenuEntries.Keys){
+		$hMenu.Add([System.Int16]$iMenuLoopCount,[System.String]$sKey)
+		# Hotkey zuordnung zum Menueintrag
+		$hMenuHotKeyList.Add([System.Int16]$iMenuLoopCount,[System.Convert]::ToChar($iMenuHotKeyChar))
+		$hMenuHotKeyListReverse.Add([System.Convert]::ToChar($iMenuHotKeyChar),[System.Int16]$iMenuLoopCount)
+		$sValidChars+=[System.Convert]::ToChar($iMenuHotKeyChar)
+		$iMenuLoopCount++
+		$iMenuHotKeyChar++
+		# Weiter mit Kleinbuchstaben
+		if($iMenuHotKeyChar -eq 58){$iMenuHotKeyChar=97}
+		# Weiter mit Großbuchstaben
+		elseif($iMenuHotKeyChar -eq 123){$iMenuHotKeyChar=65}
+		# Jetzt aber ende
+		elseif($iMenuHotKeyChar -eq 91){
+			Write-Error " Menu too big!"
+			exit(99)
+		}
+	}
+	# Remember Menu start
+	[System.Int16]$iBufferFullOffset=0
+	$iMenuStartLineAbsolute=[System.Console]::CursorTop
+	do{
+		####### Draw Menu  #######
+		[System.Console]::CursorTop=($iMenuStartLineAbsolute-$iBufferFullOffset)
+		for ($iMenuLoopCount=1;$iMenuLoopCount -le $iMenuEntries;$iMenuLoopCount++){
+			[System.Console]::Write("`r")
+			[System.String]$sPreMenuline=""
+			$sPreMenuline="  "+$hMenuHotKeyList[[System.Int16]$iMenuLoopCount]
+			$sPreMenuline+=": "
+			if ($iMenuLoopCount -eq $iMenuSelectLine){
+				[System.Console]::BackgroundColor=$iMenuBackGroundColorSelectedLine
+				[System.Console]::ForegroundColor=$iMenuForeGroundColorSelectedLine
+			}
+			if ($hMenuEntries.Item([System.String]$hMenu.Item($iMenuLoopCount)).Length -gt 0){
+				[System.Console]::Write($sPreMenuline+$hMenuEntries.Item([System.String]$hMenu.Item($iMenuLoopCount)))
+			}
+			else{
+				[System.Console]::Write($sPreMenuline+$hMenu.Item($iMenuLoopCount))
+			}
+			[System.Console]::BackgroundColor=$iMenuBackGroundColor
+			[System.Console]::ForegroundColor=$iMenuForeGroundColor
+			[System.Console]::WriteLine("")
+		}
+		[System.Console]::BackgroundColor=$iMenuBackGroundColor
+		[System.Console]::ForegroundColor=$iMenuForeGroundColor
+		[System.Console]::Write("  Your choice: " )
+		if (($iMenuStartLineAbsolute+$iMenuLoopCount) -gt [System.Console]::BufferHeight){
+			$iBufferFullOffset=($iMenuStartLineAbsolute+$iMenuLoopCount)-[System.Console]::BufferHeight
+		}
+		####### End Menu #######
+		####### Read Kex from Console 
+		$oInputChar=[System.Console]::ReadKey($true)
+		# Down Arrow?
+		if ([System.Int16]$oInputChar.Key -eq [System.ConsoleKey]::DownArrow){
+			if ($iMenuSelectLine -lt $iMenuEntries){
+				$iMenuSelectLine++
+			}
+		}
+		# Up Arrow
+		elseif([System.Int16]$oInputChar.Key -eq [System.ConsoleKey]::UpArrow){
+			if ($iMenuSelectLine -gt 1){
+				$iMenuSelectLine--
+			}
+		}
+		elseif([System.Char]::IsLetterOrDigit($oInputChar.KeyChar)){
+			[System.Console]::Write($oInputChar.KeyChar.ToString())	
+		}
+		[System.Console]::BackgroundColor=$iMenuBackGroundColor
+		[System.Console]::ForegroundColor=$iMenuForeGroundColor
+	} while(([System.Int16]$oInputChar.Key -ne [System.ConsoleKey]::Enter) -and ($sValidChars.IndexOf($oInputChar.KeyChar) -eq -1))
+	
+	# reset colors
+	[System.Console]::ForegroundColor=$iSavedForegroundColor
+	[System.Console]::BackgroundColor=$iSavedBackgroundColor
+	if($oInputChar.Key -eq [System.ConsoleKey]::Enter){
+		[System.Console]::Writeline($hMenuHotKeyList[$iMenuSelectLine])
+		return([System.String]$hMenu.Item($iMenuSelectLine))
+	}
+	else{
+		[System.Console]::Writeline("")
+		return($hMenu[$hMenuHotKeyListReverse[$oInputChar.KeyChar]])
+	}
 }
