@@ -162,13 +162,6 @@ function Install-Tools {
     Write-Host "Installing Chocolatey..."
     iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
   }
-  
-  if($env:path -match "Boxstarter") {
-    Write-Host "Boxstarter already installed."
-  } else {    
-    Write-Host "Installing Boxstarter..."
-    CINST Boxstarter -y
-  }
 }
 
 
@@ -337,28 +330,6 @@ if((Test-Path ".\localprofile.ps1")) {
 # Load machine specific profie. this is not backed up using One Drive. 
 if((Test-Path ".\localprofile.$($env:COMPUTERNAME).ps1")) {
     . ".\localprofile.$($env:COMPUTERNAME).ps1"
-}
-
-
-#Github Setup
-if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
-  $enablegithubprovider = [bool](Read-Choice "Do you want to enable the github file system access in powershell?" "&No","&Yes" -Default 1)
-  if($enablegithubprovider) {
-    Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'enabled'
-    Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
-    $githubToken = Read-Host -Prompt "Paste the token from github in here."
-    Set-PsfConfig -Key 'GITHUB_TOKEN' -Value $githubToken
-  } else {
-    Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'disabled'
-    Set-PsfConfig -Key 'GITHUB_TOKEN' -Value 'disabled'
-  }
-}
-
-Write-Host ""
-if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
-  $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
-  ipmo GithubFS
-  Write-Host " $([char]0x221A) Enabled Github Filesystem Provider"
 }
 
 #Install cmder?
