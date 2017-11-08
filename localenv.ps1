@@ -351,12 +351,17 @@ function Install-Cmder {
     $TargetFile = (Join-Path $path 'cmder.exe')
     $ShortcutFile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder.cmd"
     "@ECHO OFF`n$TargetFile" | Out-File -FilePath $ShortcutFile -Force -Encoding ascii
+    
     # Update the profile so PSF loads in CMDER
     $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\config\user-profile.ps1"
     $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
     $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
     New-Item $cmderProfile -type file -force -ea 0 | Out-Null
     $envLoadLine | Set-Content  ($cmderProfile)
+    
+    # Remove old PSGet
+    $psgetPath = Join-Path (Join-Path (Join-Path (Join-Path (Get-PsfConfig -Key ToolsPath) "cmder") "vendor") "psmodules") "PsGet"
+    Remove-Item $psgetPath -Recurse -Force | Out-Null
     Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
 }
 
