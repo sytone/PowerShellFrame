@@ -332,15 +332,14 @@ if((Test-Path ".\localprofile.$($env:COMPUTERNAME).ps1")) {
     . ".\localprofile.$($env:COMPUTERNAME).ps1"
 }
 
-#Install cmder?
-if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'CMDER_ENABLED') -eq $null) {
+function Install-Cmder {
   $miniInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder_mini.zip'
   $fullInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder.zip'
   $enableCmder = [bool](Read-Choice "Do you want to enable the cmder - http://cmder.net/ ?" "&No","&Yes" -Default 1)
   if($enableCmder) {
     $installFull = [bool](Read-Choice "Do you want to install the Full or Mini version?" "&Mini","&Full" -Default 1)
     Write-Host "Installing CMDER to tools. Please wait..."
-    Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
+
     $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
     if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory | Out-Null }
     if($installFull) {
@@ -358,6 +357,12 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
     $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
     New-Item $cmderProfile -type file -force -ea 0 | Out-Null
     $envLoadLine | Set-Content  ($cmderProfile)
+    Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
+}
+
+#Install cmder?
+if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'CMDER_ENABLED') -eq $null) {
+    Install-Cmder
   } else {
     Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'disabled'
   }
