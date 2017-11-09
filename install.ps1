@@ -79,15 +79,19 @@ if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey
 }
 Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/AutoHotkey/AutoHotkey.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey\AutoHotkey.psm1")
 
-
-if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
-    New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -ItemType Directory | Out-Null
-} else {
-  if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1"))) {
-    Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -force | Out-Null
-  }
+# Cleanup old versions. 
+if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
+  Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -recurse -force | Out-Null
 }
-Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/PowerShellFrame/PowerShellFrame.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1")
+Install-Module -Name PowerShellFrame -Scope CurrentUser -Force
+#if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
+#    New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -ItemType Directory | Out-Null
+#} else {
+#  if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1"))) {
+#    Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -force | Out-Null
+#  }
+#}
+#Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/PowerShellFrame/PowerShellFrame.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1")
 
 Write-Host "- Validating the profile $profile"
 $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
