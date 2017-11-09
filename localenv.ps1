@@ -24,6 +24,8 @@ if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )
   $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
 }
 
+# Import main module. 
+Import-Module PowerShellFrame
 
 #
 # Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
