@@ -24,6 +24,8 @@ if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )
   $env:PSMODULEPATH += ";" + $(Convert-Path Scripts:CoreModulesAuto) 
 }
 
+# Import main module. 
+Import-Module PowerShellFrame
 
 #
 # Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
@@ -160,13 +162,6 @@ function Install-Tools {
   } else {
     Write-Host "Installing Chocolatey..."
     Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
-  }
-  
-  if($env:path -match "Boxstarter") {
-    Write-Host "Boxstarter already installed."
-  } else {    
-    Write-Host "Installing Boxstarter..."
-    CINST Boxstarter -y
   }
 }
 
@@ -342,37 +337,14 @@ if((Test-Path ".\localprofile.$($env:COMPUTERNAME).ps1")) {
     . ".\localprofile.$($env:COMPUTERNAME).ps1"
 }
 
-
-#Github Setup
-if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
-  $enablegithubprovider = [bool](Read-Choice "Do you want to enable the github file system access in powershell?" "&No","&Yes" -Default 1)
-  if($enablegithubprovider) {
-    Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'enabled'
-    Write-Host "Missing Github token. Go to https://github.com/settings/tokens to generate a new token with repo and user permissions."
-    $githubToken = Read-Host -Prompt "Paste the token from github in here."
-    Set-PsfConfig -Key 'GITHUB_TOKEN' -Value $githubToken
-  } else {
-    Set-PsfConfig -Key 'GITHUBPROVIDER' -Value 'disabled'
-    Set-PsfConfig -Key 'GITHUB_TOKEN' -Value 'disabled'
-  }
-}
-
-Write-Host ""
-if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
-  $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
-  Import-Module GithubFS
-  Write-Host " $([char]0x221A) Enabled Github Filesystem Provider"
-}
-
-#Install cmder?
-if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'CMDER_ENABLED') -eq $null) {
+function Install-Cmder {
   $miniInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder_mini.zip'
   $fullInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder.zip'
   $enableCmder = [bool](Read-Choice "Do you want to enable the cmder - http://cmder.net/ ?" "&No","&Yes" -Default 1)
   if($enableCmder) {
     $installFull = [bool](Read-Choice "Do you want to install the Full or Mini version?" "&Mini","&Full" -Default 1)
     Write-Host "Installing CMDER to tools. Please wait..."
-    Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
+
     $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
     if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory | Out-Null }
     if($installFull) {
@@ -384,12 +356,23 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
     $TargetFile = (Join-Path $path 'cmder.exe')
     $ShortcutFile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder.cmd"
     "@ECHO OFF`n$TargetFile" | Out-File -FilePath $ShortcutFile -Force -Encoding ascii
+    
     # Update the profile so PSF loads in CMDER
     $cmderProfile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder\config\user-profile.ps1"
     $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
     $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
     New-Item $cmderProfile -type file -force -ea 0 | Out-Null
     $envLoadLine | Set-Content  ($cmderProfile)
+    
+    # Remove old PSGet
+    $psgetPath = Join-Path (Join-Path (Join-Path (Join-Path (Get-PsfConfig -Key ToolsPath) "cmder") "vendor") "psmodules") "PsGet"
+    Remove-Item $psgetPath -Recurse -Force | Out-Null
+    Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'enabled'
+}
+
+#Install cmder?
+if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'CMDER_ENABLED') -eq $null) {
+    Install-Cmder
   } else {
     Set-PsfConfig -Key 'CMDER_ENABLED' -Value 'disabled'
   }
