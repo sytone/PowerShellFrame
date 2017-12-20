@@ -28,7 +28,7 @@ if ( -not ($Env:PSModulepath.Contains($(Convert-Path Scripts:CoreModulesAuto)) )
 #
 # Import my auto modules. This is everything in the CoreModulesAuto folder. One folder per module. 
 #
-Get-ChildItem $(Convert-Path Scripts:CoreModulesAuto) | Where-Object {$_.PsIsContainer} | %{ 
+Get-ChildItem $(Convert-Path Scripts:CoreModulesAuto) | Where-Object {$_.PsIsContainer} | ForEach-Object{ 
   Import-Module $($_.FullName) -Force | out-null
 }
 
@@ -52,7 +52,7 @@ function Update-PSF {
     )
     $cacheTime =  Get-Random
     $downloadUrl = "https://raw.githubusercontent.com/sytone/PowerShellFrame/master/install.ps1?cache={0}" -f $cacheTime
-    iex ((new-object net.webclient).DownloadString($downloadUrl))
+    Invoke-Expression ((new-object net.webclient).DownloadString($downloadUrl))
     if(-not (Test-Path Function:\Restart-Host)) {"You will need to restart the console instance manually."} 
     else {Restart-Host -Force}
 }
@@ -84,27 +84,26 @@ function Show-SystemInfo {
   Write-Host "Snapins:".PadRight(24," ") -ForegroundColor $Color_Label -NoNewline
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
-  Get-PSSnapin | Format-Wide -autosize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} | %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1} 
+  Get-PSSnapin | Format-Wide -autosize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} | ForEach-Object{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1} 
   
   Write-Host "Modules:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
   
-  Get-Module | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}
-  #Get-Module -ListAvailable | Format-Wide -Column 3 | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_2} 
+  Get-Module | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  ForEach-Object{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}
   
   Write-Host "Functions:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
-  Get-ChildItem Scripts:CoreFunctions* -Recurse | Select-Object Name | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $($_.Replace(".ps1",""))) -foregroundColor $Color_Value_1}  
+  Get-ChildItem Scripts:CoreFunctions* -Recurse | Select-Object Name | Format-Wide -AutoSize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  ForEach-Object{ Write-Host $($(" "*$StartingPosition) + $($_.Replace(".ps1",""))) -foregroundColor $Color_Value_1}  
   
   $Host.UI.RawUI.ForegroundColor =$PreviousColor
   Write-Host ""
   Write-Host ""
 
   $LogicalDisk = @()
-  gwmi Win32_LogicalDisk -filter "DriveType='3'" | % {
-    $LogicalDisk += @($_ | Select @{n="Name";e={$_.Caption}},
+  Get-WmiObject Win32_LogicalDisk -filter "DriveType='3'" | ForEach-Object {
+    $LogicalDisk += @($_ | Select-Object @{n="Name";e={$_.Caption}},
     @{n="Volume Label";e={$_.VolumeName}},
     @{n="Used (GB)";e={"{0:N2}" -f ( ($_.Size/1GB) - ($_.FreeSpace/1GB) )}},
     @{n="Free (GB)";e={"{0:N2}" -f ($_.FreeSpace/1GB)}},
@@ -115,7 +114,7 @@ function Show-SystemInfo {
   Write-Host "Disks:".PadRight(24," ") -foregroundcolor $Color_Label  -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
-  $LogicalDisk | format-table -AutoSize |  Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  %{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}  
+  $LogicalDisk | format-table -AutoSize |  Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} |  ForEach-Object{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1}  
 
   Write-Host "Uptime:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
@@ -160,7 +159,7 @@ function Install-Tools {
     Write-Host "Chocolatey already installed."
   } else {
     Write-Host "Installing Chocolatey..."
-    iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+    Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
   }
   
   if($env:path -match "Boxstarter") {
@@ -241,7 +240,7 @@ switch ( $Host.Name ) {
         # watch for changes to the Files collection of the current Tab
         register-objectevent $psise.CurrentPowerShellTab.Files collectionchanged -action {
           # iterate ISEFile objects
-          $event.sender | % {
+          $event.sender | ForEach-Object {
             # set private field which holds default encoding to ASCII
             $_.gettype().getfield("encoding","nonpublic,instance").setvalue($_, [text.encoding]::ascii)
           }
@@ -299,13 +298,17 @@ if($onedrive) {
   if (-not (Test-Path OneDrive:)) {
     New-PSDrive -name OneDrive -psprovider FileSystem -root $OneDrive -Description "OneDrive Folder" -Scope Global | Out-Null
   }
+  if(-not (Test-Path "$onedrive\scripts\powershell")) {
+    New-Item -Path "$onedrive\scripts\powershell" -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
+  }
+  Add-DirectoryToPath -Directory "$onedrive\scripts\powershell"
 }
 
 #
 # Update Path to make life easier.
 #
-Get-Item Scripts:CoreFunctions | ? { $_.PsIsContainer } | % {Add-DirectoryToPath -Directory "$($_.FullName)" }
-Get-ChildItem Scripts:CoreFunctions* | ? { $_.PsIsContainer } | % {Add-DirectoryToPath -Directory "$($_.FullName)" }
+Get-Item Scripts:CoreFunctions | Where-Object { $_.PsIsContainer } | ForEach-Object {Add-DirectoryToPath -Directory "$($_.FullName)" }
+Get-ChildItem Scripts:CoreFunctions* | Where-Object { $_.PsIsContainer } | ForEach-Object {Add-DirectoryToPath -Directory "$($_.FullName)" }
 
 # Setup the prompt
 function Global:prompt {
@@ -357,7 +360,7 @@ if(!$env:GITHUB_TOKEN -and !(Get-PsfConfig -Key 'GITHUB_TOKEN')) {
 Write-Host ""
 if((Get-PsfConfig -Key 'GITHUBPROVIDER') -eq 'enabled') {
   $env:GITHUB_TOKEN = Get-PsfConfig -Key 'GITHUB_TOKEN'
-  ipmo GithubFS
+  Import-Module GithubFS
   Write-Host " $([char]0x221A) Enabled Github Filesystem Provider"
 }
 
@@ -399,7 +402,7 @@ if((Get-PsfConfig -Key 'CMDER_ENABLED') -eq 'unknown' -or (Get-PsfConfig -Key 'C
 #  choco install git -y
 
 # Friendly Tips!
-$tip = (cat psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((cat psf:\tips.txt).Count + 1))]
+$tip = (Get-Content psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((Get-Content psf:\tips.txt).Count + 1))]
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
 Write-Host " $tip `n`n"
 
