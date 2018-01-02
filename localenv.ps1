@@ -389,6 +389,6 @@ $tip = (Get-Content psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((Get-Content
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
 Write-Host " $tip `n`n"
 
-if($env:psfretainpath -eq 'true') {
+if($env:psfretainpath -eq 'true' -or $env:TERM_PROGRAM -eq 'vscode') {
   Pop-Location
 }
