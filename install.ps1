@@ -9,7 +9,7 @@ if(!$psGallery) {
   Write-Error "PowerShellGet not avaliable from 'Get-PackageProvider -Name PowerShellGet'"
 }
 
-cd $env:USERPROFILE 
+Push-Location $env:USERPROFILE 
 
 $psfRemoteRoot = "https://raw.githubusercontent.com/sytone/PowerShellFrame/master"
 $psfLocalRoot =  Join-Path $env:USERPROFILE "psf"
@@ -18,10 +18,7 @@ $psfLocalModules = Join-Path $psfLocalRoot "modules"
 
 function Get-FileFromWeb($url,$outfile) {
   $cacheTime =  Get-Random -Maximum 10000000 -Minimum 0
-  $tmpfile = Join-Path $outfile ".tmp"
   Invoke-WebRequest ("{0}?cache={1}" -f $url, $cacheTime) -outfile $outfile
-  #Remove-Item -Path $tmpfile -Force
-  #Move-Item -Path $tmpfile -Destination $outfile -Force
 }
 
 Write-Host "-------------------------------------------------------------------------------"
@@ -119,7 +116,7 @@ if ((Test-Path $profile) -eq $false) {
 
 Write-Host "-------------------------------------------------------------------------------"
 
-
+Pop-Location
 
 
 
