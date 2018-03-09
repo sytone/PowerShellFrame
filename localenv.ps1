@@ -359,14 +359,19 @@ function Install-Cmder {
   if($enableCmder) {
     $installFull = [bool](Read-Choice "Do you want to install the Full or Mini version?" "&Mini","&Full" -Default 1)
     Write-Host "Installing CMDER to tools. Please wait..."
-
+    
     $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
     if(!(Test-Path $path)) {New-Item -Path $path -ItemType Directory | Out-Null }
+    
+    $currentSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     if($installFull) {
       Invoke-WebRequest -Uri $miniInstallSource -OutFile (Join-Path $path 'cmder.zip')
     } else {
       Invoke-WebRequest -Uri $miniInstallSource -OutFile (Join-Path $path 'cmder.zip')
     }
+    [Net.ServicePointManager]::SecurityProtocol = $currentSecurityProtocol
+    
     Expand-Archive -Path (Join-Path $path 'cmder.zip') -DestinationPath $path
     $TargetFile = (Join-Path $path 'cmder.exe')
     $ShortcutFile = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder.cmd"
