@@ -288,7 +288,11 @@ switch ( $Host.Name ) {
 #
 # Add variable for onedrive from registry if installed and mapping drive.  
 #
-$onedrive = (Get-ItemProperty -Path "hkcu:\Software\Microsoft\OneDrive\" -Name UserFolder).UserFolder
+$onedriveProperty = Get-ItemProperty -Path "hkcu:\Software\Microsoft\OneDrive\" -Name UserFolder -ErrorAction SilentlyContinue
+if($onedriveProperty) {
+  $onedrive = $onedriveProperty.UserFolder
+}
+
 if($onedrive) {
   if (-not (Test-Path OneDrive:)) {
     New-PSDrive -name OneDrive -psprovider FileSystem -root $OneDrive -Description "OneDrive Folder" -Scope Global | Out-Null
