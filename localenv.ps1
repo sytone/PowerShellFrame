@@ -212,11 +212,22 @@ function Set-LocationTools {
   Set-LocationWithPathCheck (Get-PsfConfig -Key ToolsPath)
 }
 
+function Start-Cmder {
+  $path = Join-Path (Get-PsfConfig -Key ToolsPath) "cmder"
+  $TargetFile = (Join-Path $path 'cmder.exe')
+  if((Test-Path $TargetFile)) {
+    Start-Process $TargetFile
+  } else {
+    Install-Cmder
+  }
+}
+
 set-alias cdev Set-LocationDevelopment
 set-alias ctools Set-LocationTools;
 set-alias sudo Start-ElevatedProcess;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
+set-alias cmder Start-Cmder;
 
 switch ( $Host.Name ) {
     'Windows PowerShell ISE Host' {
@@ -342,8 +353,8 @@ if((Test-Path ".\localprofile.$($env:COMPUTERNAME).ps1")) {
 }
 
 function Install-Cmder {
-  $miniInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder_mini.zip'
-  $fullInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.2/cmder.zip'
+  $miniInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.5/cmder_mini.zip'
+  $fullInstallSource = 'https://github.com/cmderdev/cmder/releases/download/v1.3.5/cmder.zip'
   $enableCmder = [bool](Read-Choice "Do you want to enable the cmder - http://cmder.net/ ?" "&No","&Yes" -Default 1)
   if($enableCmder) {
     $installFull = [bool](Read-Choice "Do you want to install the Full or Mini version?" "&Mini","&Full" -Default 1)
