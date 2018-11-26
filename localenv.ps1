@@ -409,6 +409,12 @@ $tip = (Get-Content psf:\tips.txt)[(Get-Random -Minimum 0 -Maximum ((Get-Content
 Write-Host "`n-= Tip =-" -foregroundcolor $Color_Label
 Write-Host " $tip `n`n"
 
+# Fix web invoke issues by allowing multiple tls types. 
+[Net.ServicePointManager]::SecurityProtocol = 
+  [Net.SecurityProtocolType]::Tls12 -bor `
+  [Net.SecurityProtocolType]::Tls11 -bor `
+  [Net.SecurityProtocolType]::Tls
+
 if($env:psfretainpath -eq 'true' -or $env:TERM_PROGRAM -eq 'vscode') {
   Pop-Location
 }
