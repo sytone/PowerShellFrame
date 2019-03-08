@@ -66,8 +66,8 @@ function Update-PSF {
 function Show-SystemInfo {
   
   # Grab some system Information to be displayed
-  $PSVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$PSHome\Powershell.exe").FileVersion
-  $IPAddress = @( Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIpGateway } )[0].IPAddress[0]
+  $PSVersion = "{0} - {1}" -f $PSVersionTable.PsVersion, $PSVersionTable.PSEdition
+  $IPAddress = (Get-NetIPAddress -AddressFamily IPv4 | where { $_.InterfaceAlias -notmatch 'Loopback' -and $_.InterfaceAlias -notmatch 'bluetooth'})[0].IPAddress
   $Cert = Get-ChildItem -Path Cert:CurrentUser\my -CodeSigningCert
   
   $PreviousColor = $Host.UI.RawUI.ForegroundColor
@@ -83,11 +83,6 @@ function Show-SystemInfo {
   Write-Host "Code Signing Cert:".PadRight(24," ") -ForegroundColor $Color_Label -nonewline
   Write-Host $Cert.FriendlyName -ForegroundColor $Color_Value_2
 
-  Write-Host "Snapins:".PadRight(24," ") -ForegroundColor $Color_Label -NoNewline
-  $StartingPosition = $Host.UI.RawUI.CursorPosition.X
-  Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
-  Get-PSSnapin | Format-Wide -autosize | Out-String -Width $( $HostWidth -$StartingPosition -1 ) -stream | Where-Object {$_} | ForEach-Object{ Write-Host $($(" "*$StartingPosition) + $_) -foregroundColor $Color_Value_1} 
-  
   Write-Host "Modules:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
   Write-Host "".PadRight(30,"-") -ForegroundColor $Color_Label
@@ -104,13 +99,13 @@ function Show-SystemInfo {
   Write-Host ""
 
   $LogicalDisk = @()
-  Get-WmiObject Win32_LogicalDisk -filter "DriveType='3'" | ForEach-Object {
-    $LogicalDisk += @($_ | Select-Object @{n="Name";e={$_.Caption}},
-    @{n="Volume Label";e={$_.VolumeName}},
-    @{n="Used (GB)";e={"{0:N2}" -f ( ($_.Size/1GB) - ($_.FreeSpace/1GB) )}},
-    @{n="Free (GB)";e={"{0:N2}" -f ($_.FreeSpace/1GB)}},
+  Get-Volume | ForEach-Object {
+    $LogicalDisk += @($_ | Select-Object @{n="Name";e={$_.FriendlyName}},
+    @{n="Volume Label";e={$_.DriveLetter}},
+    @{n="Used (GB)";e={"{0:N2}" -f ( ($_.Size/1GB) - ($_.SizeRemaining/1GB) )}},
+    @{n="Free (GB)";e={"{0:N2}" -f ($_.SizeRemaining/1GB)}},
     @{n="Size (GB)";e={"{0:N2}" -f ($_.Size/1GB)}},
-    @{n="Free (%)";e={if($_.Size) { "{0:N2}" -f ( ($_.FreeSpace/1GB) / ($_.Size/1GB) * 100 )}else{"NAN"} }} )
+    @{n="Free (%)";e={if($_.Size) { "{0:N2}" -f ( ($_.SizeRemaining/1GB) / ($_.Size/1GB) * 100 )}else{"NAN"} }} )
   } 
 
   Write-Host "Disks:".PadRight(24," ") -foregroundcolor $Color_Label  -noNewLine
@@ -120,7 +115,11 @@ function Show-SystemInfo {
 
   Write-Host "Uptime:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
+  if(Get-Command -Name Get-Uptime) {
+    $uptime = Get-Uptime
+  } else {
   $uptime = Get-SystemUptime
+  }
   Write-Host $uptime.days -NoNewline -ForegroundColor $Color_Label
   Write-Host " days " -NoNewline -ForegroundColor $Color_Value_2
   Write-Host $uptime.hours -NoNewline -ForegroundColor $Color_Label
