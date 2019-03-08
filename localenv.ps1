@@ -115,7 +115,7 @@ function Show-SystemInfo {
 
   Write-Host "Uptime:".PadRight(24," ") -foregroundcolor $Color_Label -noNewLine
   $StartingPosition = $Host.UI.RawUI.CursorPosition.X
-  if(Get-Command -Name Get-Uptime) {
+  if(Get-Command -Name Get-Uptime -ErrorAction SilentlyContinue) {
     $uptime = Get-Uptime
   } else {
   $uptime = Get-SystemUptime
