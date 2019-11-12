@@ -247,15 +247,18 @@ Write-Host " $tip `n`n"
   [Net.SecurityProtocolType]::Tls11 -bor `
   [Net.SecurityProtocolType]::Tls
 
+
+$personalOneDriveRoot = (Get-PSDrive -Name OneDrive).Root
+
 # Load the local profile. If found then load it.
 if ((Test-Path ".\localprofile.ps1")) {
   . .\localprofile.ps1
 }
 
 # Load the onedrive profile. If found then load it.
-if ($onedrive) {
-  if ((Test-Path "$onedrive\scripts\powershell\localprofile.ps1")) {
-    . "$onedrive\scripts\powershell\localprofile.ps1"
+if ($personalOneDriveRoot) {
+  if ((Test-Path "$personalOneDriveRoot\scripts\powershell\localprofile.ps1")) {
+    . "$personalOneDriveRoot\scripts\powershell\localprofile.ps1"
   }  
 }
 
@@ -265,9 +268,9 @@ if ((Test-Path ".\localprofile.$($env:COMPUTERNAME).ps1")) {
 }
 
 # Load the onedrive machine specific profile. If found then load it.
-if ($onedrive) {
-  if ((Test-Path "$onedrive\scripts\powershell\localprofile.$($env:COMPUTERNAME).ps1")) {
-    . "$onedrive\scripts\powershell\localprofile.$($env:COMPUTERNAME).ps1"
+if ($personalOneDriveRoot) {
+  if ((Test-Path "$personalOneDriveRoot\scripts\powershell\localprofile.$($env:COMPUTERNAME).ps1")) {
+    . "$personalOneDriveRoot\scripts\powershell\localprofile.$($env:COMPUTERNAME).ps1"
   }  
 }
 
