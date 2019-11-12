@@ -177,6 +177,9 @@ if (-not (Test-Path Psf:\config.xml)) {
 }
 
 $Global:PsfConfiguration = Import-Clixml Psf:\config.xml
+$Global:Color_Label = $Global:PsfConfiguration.HostColorLabel
+$Global:Color_Value_1 = $Global:PsfConfiguration.HostColorValue1
+$Global:Color_Value_2 = $Global:PsfConfiguration.HostColorValue2
 
 # Setup tools directory and path. 
 if(-not(Test-Path (Get-PsfConfig -Key ToolsPath))) {
