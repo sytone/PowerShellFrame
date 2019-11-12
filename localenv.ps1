@@ -213,7 +213,7 @@ set-alias updatepsf Update-PSF;
 #
 # Add variable for onedrive from registry if installed and mapping drive. Personal is the default.
 #
-$onedriveProperty = Get-ItemProperty -Path "hkcu:\Software\Microsoft\OneDrive\Personal" -Name UserFolder -ErrorAction SilentlyContinue
+$onedriveProperty = Get-ItemProperty -Path "hkcu:\Software\Microsoft\OneDrive\Accounts\Personal" -Name UserFolder -ErrorAction SilentlyContinue
 if ($onedriveProperty) {
   $onedrive = $onedriveProperty.UserFolder
 }
