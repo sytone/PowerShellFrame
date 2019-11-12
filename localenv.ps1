@@ -69,7 +69,7 @@ function Show-SystemInfo {
   
   # Grab some system Information to be displayed
   $PSVersion = "{0} - {1}" -f $PSVersionTable.PsVersion, $PSVersionTable.PSEdition
-  $IPAddress = (Get-NetIPAddress -AddressFamily IPv4 | where { $_.InterfaceAlias -notmatch 'Loopback' -and $_.InterfaceAlias -notmatch 'bluetooth' })[0].IPAddress
+  $IPAddress = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notmatch 'Loopback' -and $_.InterfaceAlias -notmatch 'bluetooth' })[0].IPAddress
   $Cert = Get-ChildItem -Path Cert:CurrentUser\my -CodeSigningCert
   
   $PreviousColor = $Host.UI.RawUI.ForegroundColor
