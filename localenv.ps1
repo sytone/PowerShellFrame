@@ -55,8 +55,10 @@ function Update-PSF {
   $cacheTime = Get-Random
   $downloadUrl = "https://raw.githubusercontent.com/sytone/PowerShellFrame/master/install.ps1?cache={0}" -f $cacheTime
   Invoke-Expression ((new-object net.webclient).DownloadString($downloadUrl))
-  if (-not (Test-Path Function:\Restart-Host)) { "You will need to restart the console instance manually." } 
-  else { Restart-Host -Force }
+  if((Get-Module -Name PowerShellFrame)) {
+    Remove-Module -Name PowerShellFrame
+  }
+  . "~/localenv.ps1"
 }
 
 <#
