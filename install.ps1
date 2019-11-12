@@ -22,7 +22,7 @@ function Get-FileFromWeb($url,$outfile) {
 }
 
 Write-Host "-------------------------------------------------------------------------------"
-Write-Host "    Welcome to the PowerShelFrame (PSF) "
+Write-Host "    Welcome to the PowerShelFrame (PSF) Installer"
 Write-Host ""
 Write-Host " - This is being installed at: $psfLocalRoot"
 
@@ -84,7 +84,8 @@ if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame
 # Install from powershell gallery.
 Install-Module -Name PowerShellFrame -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction SilentlyContinue
 
-Write-Host " - Validating the profile $profile"
+Write-Host " - Validating the profile $profile for this instance of powershell"
+Write-Host " NOTE: You may have to update the `$profile for other instances where the profile path changes."
 $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
 if ((Test-Path $profile) -eq $false) {
   New-Item $profile -type file -force -ea 0 | Out-Null
