@@ -27,14 +27,14 @@ Write-Host ""
 Write-Host " - This is being installed at: $psfLocalRoot"
 
 if(-not (Test-Path $psfLocalRoot)) {
-  Write-Host "- Creating PSF"
+  Write-Host " - Creating PSF"
   New-Item $psfLocalRoot -Type Directory | Out-Null
   New-Item $psfLocalTemp -Type Directory | Out-Null
   New-Item $psfLocalModules -Type Directory | Out-Null 
   Get-FileFromWeb -url "$psfRemoteRoot/localenv.ps1" -outfile "$psfLocalRoot\localenv.ps1"
   Get-FileFromWeb -url "$psfRemoteRoot/tips.txt" -outfile "$psfLocalRoot\tips.txt"
 } else {
-  Write-Host "- Upgrading PSF"
+  Write-Host " - Upgrading PSF"
   if((Test-Path "$psfLocalRoot\localenv.ps1")) {
     Remove-Item "$psfLocalRoot\localenv.ps1" -Force
   }
@@ -46,7 +46,7 @@ if(-not (Test-Path $psfLocalRoot)) {
 # 
 # Test the Scripts directories are in place.  
 #
-Write-Host "- Checking Scripts"
+Write-Host " - Checking Scripts"
 $ScriptsRoot = (Join-Path $env:USERPROFILE "Scripts")  
 if(-not (Test-Path $ScriptsRoot)) {
     New-Item $ScriptsRoot -ItemType Directory | Out-Null
@@ -66,7 +66,7 @@ if(-not (Test-Path $AhkScriptsRoot)) {
 }
 
 # These are core modules used by PSF. 
-Write-Host "- Adding/Updating PSF Modules"
+Write-Host " - Adding/Updating PSF Modules"
 if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey"))) { 
     New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\AutoHotkey") -ItemType Directory | Out-Null
 } else {
@@ -80,17 +80,11 @@ Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/AutoHotk
 if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
   Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -recurse -force | Out-Null
 }
-Install-Module -Name PowerShellFrame -Scope CurrentUser -Force
-#if(-not (Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame"))) { 
-#    New-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame") -ItemType Directory | Out-Null
-#} else {
-#  if((Test-Path (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1"))) {
-#    Remove-Item (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1") -force | Out-Null
-#  }
-#}
-#Get-FileFromWeb -url "$psfRemoteRoot/Scripts/PowerShell/CoreModulesAuto/PowerShellFrame/PowerShellFrame.psm1" -outfile (Join-Path $PowerShellScriptsRoot "CoreModulesAuto\PowerShellFrame\PowerShellFrame.psm1")
 
-Write-Host "- Validating the profile $profile"
+# Install from powershell gallery.
+Install-Module -Name PowerShellFrame -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction SilentlyContinue
+
+Write-Host " - Validating the profile $profile"
 $envLoadLine = "`n. $psfLocalRoot\localenv.ps1   #LOCALENV - May change in future`n"
 if ((Test-Path $profile) -eq $false) {
   New-Item $profile -type file -force -ea 0 | Out-Null
