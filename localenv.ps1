@@ -58,7 +58,7 @@ function Update-PSF {
   if((Get-Module -Name PowerShellFrame)) {
     Remove-Module -Name PowerShellFrame
   }
-  . "~/localenv.ps1"
+  . ~\psf\localenv.ps1
 }
 
 <#
