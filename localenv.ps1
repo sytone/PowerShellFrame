@@ -206,7 +206,6 @@ function Set-LocationTools {
 
 set-alias cdev Set-LocationDevelopment
 set-alias ctools Set-LocationTools;
-set-alias sudo Start-ElevatedProcess;
 set-alias reload Restart-Host;
 set-alias updatepsf Update-PSF;
 
